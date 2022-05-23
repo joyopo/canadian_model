@@ -110,7 +110,7 @@ def configure_netcdf(df, filepath):
     df.sort_values(by=['latitude', 'longitude'], inplace=True)
 
     # TODO: increase dimension number
-    forecast_hour_dim = ds.createDimension('forecast_hour', len(VARIABLES.keys()))
+    forecast_hour_dim = ds.createDimension('forecast_hour', 3)
     lat_dim = ds.createDimension('lat', len(df.latitude.unique()))
     lon_dim = ds.createDimension('lon', len(df.longitude.unique()))
 
@@ -126,7 +126,7 @@ def configure_netcdf(df, filepath):
     lons = df.longitude.unique()
     latitudes[:] = lats
     longitudes[:] = lons
-    hours[:] = [int(x) for x in list(VARIABLES.keys())]
+    hours[:] = [0, 120, 240]
 
     return ds
 
