@@ -10,7 +10,6 @@
 #     df_to_gdf,
 #     spatial_join_and_group
 #     )
-import mysite.weather.common
 from . import file_download
 
 import dash
@@ -22,12 +21,12 @@ import geopandas as gpd
 import geojson
 import json
 from urllib.request import urlopen
-
 from django_plotly_dash import DjangoDash
 import plotly.express as px
 import plotly.graph_objects as go
 # from dash_app_code import token
 from django_plotly_dash import DjangoDash
+from .common import generate_plot_labels, generate_slider_marks
 
 # app = dash.Dash(__name__)
 app = DjangoDash('pakistan_grid')
@@ -79,7 +78,8 @@ print("joining gdfs")
 
 print('done with data')
 print('making labels')
-labels = mysite.weather.common.generate_plot_labels()
+labels = generate_plot_labels()
+slider_marks = generate_slider_marks()
 print('computing layout')
 
 app.layout = html.Div([
@@ -103,13 +103,9 @@ app.layout = html.Div([
         min=0,
         max=240,
         step=None,
-        marks={
-            0: '0 hours',
-            120: '120 hours',
-            240: '240 hours',
-        },
+        marks=slider_marks,
         value=0,
-
+        # vertical=True,
         id='hour-slider'
     )], style={
         'border': '1px grey solid',

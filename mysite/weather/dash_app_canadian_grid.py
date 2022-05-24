@@ -1,5 +1,5 @@
 # from weather import make_plot
-import mysite.weather.common
+from .common import generate_plot_labels, generate_slider_marks
 from . import make_plot, file_download
     # make_plot,
     # group_data,
@@ -88,7 +88,7 @@ columns = list(gdf.columns) + ['id']
 joined = joined[columns]
 
 print('making labels')
-labels = mysite.weather.common.generate_plot_labels()
+labels = generate_plot_labels()
 
 
 print("computing layout")

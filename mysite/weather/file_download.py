@@ -8,9 +8,10 @@ import xarray as xr
 import logging
 import time
 
-# from . import make_plot, netcdf
-from mysite.weather import make_plot, netcdf
-from mysite.weather.common import PROJECT_ROOT_PATH, COUNTRIES, VARIABLES
+from . import make_plot  # , netcdf
+# from mysite.weather import make_plot, netcdf
+# from mysite.weather.common
+from .common import PROJECT_ROOT_PATH, COUNTRIES, VARIABLES
 
 
 logging.basicConfig(level=logging.INFO)

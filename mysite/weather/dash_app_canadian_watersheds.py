@@ -24,7 +24,7 @@ from django_plotly_dash import DjangoDash
 import plotly.express as px
 from datetime import datetime
 
-import mysite.weather.common
+from .common import generate_plot_labels, generate_slider_marks
 from . import file_download
 
 
@@ -51,7 +51,7 @@ print('reading in csv data')
 watershed_data_grouped = pd.read_csv(f'/Users/jpy/PycharmProjects/canadian_model/mysite/live_data/canada/aggregated/watersheds/watersheds.csv')
 
 print('making labels')
-labels = mysite.weather.common.generate_plot_labels()
+labels = generate_plot_labels()
 
 
 print("computing layout")
