@@ -69,4 +69,36 @@ def generate_slider_marks():
         else:
             marks[hour] = f'{hour} hours'
 
-    return marks
+    # create dictionary that translates dummy code integer to the actual hour
+    dummy_code_hours = {}
+    num_steps = len(list(VARIABLES.keys()))
+    i = 0
+    hour_steps = [int(x) for x in list(VARIABLES.keys())]
+
+    for x in range(num_steps):
+        dummy_code_hours[x] = hour_steps[i]
+        i += 1
+
+    # replace the keys in marks dictionary with the dummy keys
+    for key in list(dummy_code_hours.keys()):
+        marks[key] = marks.pop(dummy_code_hours[key])
+
+    return marks, dummy_code_hours
+
+
+def generate_radio_options():
+    options = []
+    for hour in [int(x) for x in list(VARIABLES.keys())]:
+        options.append({'label': f'{hour} hours', 'value': hour})
+
+    for i in options:
+        if i['value'] == 72:
+            i['label'] = '3 days'
+        elif i['value'] == 168:
+            i['label'] = '1 week'
+        elif i['value'] == 240:
+            i['label'] = '10 days'
+        else:
+            pass
+
+    return options

@@ -26,7 +26,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 # from dash_app_code import token
 from django_plotly_dash import DjangoDash
-from .common import generate_plot_labels, generate_slider_marks
+from .common import generate_plot_labels, generate_slider_marks, generate_radio_options
 
 # app = dash.Dash(__name__)
 app = DjangoDash('pakistan_grid')
@@ -79,7 +79,8 @@ print("joining gdfs")
 print('done with data')
 print('making labels')
 labels = generate_plot_labels()
-slider_marks = generate_slider_marks()
+radio_options = generate_radio_options()
+slider_marks, dummy_code_hours = generate_slider_marks()
 print('computing layout')
 
 app.layout = html.Div([
@@ -100,9 +101,9 @@ app.layout = html.Div([
     )], style={'marginBottom': 20}),
 
     html.Div([dcc.Slider(
-        min=0,
-        max=240,
-        step=None,
+        # min=0,
+        # max=240,
+        # step=None,
         marks=slider_marks,
         value=0,
         # vertical=True,
@@ -110,11 +111,10 @@ app.layout = html.Div([
     )], style={
         'border': '1px grey solid',
         'padding': 10,
-        'marginBottom': 20
-        # 'marginTop': 10
-    }),
+        'marginBottom': 20}),
+    html.Div([dcc.Graph(id='choropleth')])  # style={'display': 'inline-block'}
 
-    html.Div([dcc.Graph(id='choropleth')])]
+    ]
 )
 
 print('making plot')
@@ -131,7 +131,7 @@ def make_choropleth(variable, hour):
         geojson=pakistan_gjson,
         locations='id',
         featureidkey='properties.id',
-        color=f'{variable}_{hour}',
+        color=f'{variable}_{dummy_code_hours[hour]}',
         mapbox_style="satellite-streets",
         opacity=.6,
         zoom=4,
@@ -151,6 +151,7 @@ def make_choropleth(variable, hour):
     )
     fig.update_layout(
         autosize=True,
+        # sliders=[{'len': 800}, {'lenmode': 'pixels'}]
     )
 
     # test
