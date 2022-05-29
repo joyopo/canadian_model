@@ -10,12 +10,18 @@
 #     df_to_gdf,
 #     spatial_join_and_group
 #     )
+# from mysite.weather import file_download
 from . import file_download
+
 
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+from dash import dash_table
+
 from dash.dependencies import Input, Output
+from dash_extensions import Download
+from dash_extensions.snippets import send_data_frame
 import pandas as pd
 import geopandas as gpd
 import geojson
@@ -27,6 +33,7 @@ import plotly.graph_objects as go
 # from dash_app_code import token
 from django_plotly_dash import DjangoDash
 from .common import generate_plot_labels, generate_slider_marks, generate_radio_options
+# from mysite.weather.common import generate_plot_labels, generate_slider_marks, generate_radio_options
 
 # app = dash.Dash(__name__)
 app = DjangoDash('pakistan_grid')
@@ -83,6 +90,8 @@ radio_options = generate_radio_options()
 slider_marks, dummy_code_hours = generate_slider_marks()
 print('computing layout')
 
+
+
 app.layout = html.Div([
     # html.H1("Pakistan Weather Portal"),
     # html.Div([
@@ -101,17 +110,29 @@ app.layout = html.Div([
     )], style={'marginBottom': 20}),
 
     html.Div([dcc.Slider(
-        # min=0,
-        # max=240,
-        # step=None,
+        step=1,
         marks=slider_marks,
         value=0,
-        # vertical=True,
         id='hour-slider'
     )], style={
         'border': '1px grey solid',
         'padding': 10,
         'marginBottom': 20}),
+
+    # html.Table([
+    #     html.Tr([html.Td(['Latitude']), html.Td(id='lat')]),
+    #     html.Tr([html.Td(['Longitude']), html.Td(id='lon')]),
+    #     html.Tr([html.Td(['Value']), html.Td(id='val')]),
+    #
+    # ]),
+
+    # html.Pre(id='click-data'),
+    dash_table.DataTable(
+        id='data-table',
+    ),
+
+    html.Button("Download", id="btn"), Download(id="download"),
+
     html.Div([dcc.Graph(id='choropleth')])  # style={'display': 'inline-block'}
 
     ]
@@ -119,6 +140,100 @@ app.layout = html.Div([
 
 print('making plot')
 
+
+@app.callback(
+    Output('data-table', 'columns'),
+    Output('data-table', 'data'),
+    Input('choropleth', 'clickData'),
+    Input('weather-dropdown', 'value'),
+    Input('hour-slider', 'value')
+)
+def display_click_data(clickdata, variable, hour):
+    json_string = json.dumps(clickdata)
+    data = json.loads(json_string)
+    location = data['points'][0]['location']
+    latitude = data['points'][0]['customdata'][0]
+    longitude = data['points'][0]['customdata'][1]
+    value = joined.loc[(joined.id == location), f'{variable}_{dummy_code_hours[hour]}'].item()
+    # data['points'][0]['customdata'][2]
+    # 'id' is the row id
+    data = [
+        {
+            'location_id': location,
+            'latitude': latitude,
+            'longitude': longitude,
+            f'{variable}_{dummy_code_hours[hour]}': value,
+            'id': 0}
+    ]
+    data_table_columns = [{
+        'name': 'latitude',
+        'id': 'latitude'
+    }, {
+        'name': 'longitude',
+        'id': 'longitude'
+    }, {
+        'name': 'location_id',
+        'id': 'location_id'
+    }, {
+        'name': f'{variable}_{dummy_code_hours[hour]}',
+        'id': f'{variable}_{dummy_code_hours[hour]}'
+    }]
+
+    return data_table_columns, data
+    # return json.dumps(clickData)
+
+
+@app.callback(
+    Output('download', 'data'),
+    Input('data-table', 'data'),
+    Input('weather-dropdown', 'value'),
+    Input('btn', 'n_clicks')
+)
+def filter_and_download(data, variable, n_clicks):
+    lat = data[0]['latitude']
+    lon = data[0]['longitude']
+    # function to get coordinates of square around click point here
+
+    lat_lon_list = []
+    lat_lon_list.append([lat, lon])
+
+    lat_lon_list.append([lat + .15, lon])
+    lat_lon_list.append([lat - .15, lon])
+    lat_lon_list.append([lat, lon + .15])
+    lat_lon_list.append([lat, lon - .15])
+
+    lat_lon_list.append([lat + .15, lon + .15])
+    lat_lon_list.append([lat - .15, lon - .15])
+    lat_lon_list.append([lat + .15, lon - .15])
+    lat_lon_list.append([lat - .15, lon + .15])
+
+    download_df = pd.DataFrame(data={}, columns=joined.columns)
+    for i in lat_lon_list:
+        filtered_row = joined.loc[(joined['latitude'] == i[0]) & (joined['longitude'] == i[1])]
+        download_df = download_df.append(filtered_row)
+
+    # filter download_df to just the variable selected
+    cols_to_keep = ['latitude', 'longitude', 'id', 'valid_time_0']
+    for col in download_df.columns:
+        if col.startswith(variable) and not col.endswith('binned'):
+            cols_to_keep.append(col)
+
+    download_df = download_df[cols_to_keep]
+
+    # add 'hours' to end of forecast columns
+    for col in download_df.columns:
+        if col.startswith('t2m'):
+            download_df = download_df.rename(columns={col: col + '_hours'})
+    download_df = download_df.rename(columns={'valid_time_0': 'forecast_start_time'})
+
+    # columns_to_transpose = []
+    # for col in download_df_f:
+    #     if col.startswith('t2m'):
+    #         columns_to_transpose.append(col)
+    # df_to_transpose = download_df_f[columns_to_transpose]
+    # download_df_f = download_df_f.drop(columns_to_transpose)
+
+    return send_data_frame(download_df.to_csv, f'{country}_{variable}.csv')
 
 @app.callback(
     Output("choropleth", 'figure'),
@@ -139,8 +254,9 @@ def make_choropleth(variable, hour):
         height=800,
         width=1000,
         labels=labels,  # .update({'ADM2_PCODE_': 'Administrative Boundary Code'}),
-        hover_data=['longitude', 'latitude', f'{variable}_{hour}'],
-        title='Weather Variables Visualized Over 0.15 Degree Resolution'
+        hover_data=['longitude', 'latitude', f'{variable}_{dummy_code_hours[hour]}'],
+        title='Weather Variables Visualized Over 0.15 Degree Resolution',
+        custom_data=['latitude', 'longitude', f'{variable}_{dummy_code_hours[hour]}']
     )
 
     fig.update_traces(
@@ -158,7 +274,7 @@ def make_choropleth(variable, hour):
     # if
 
     if variable != 't2m':
-        fig.update_coloraxes(cmin=1, cmax=joined[f'{variable}_{hour}'].max(),
+        fig.update_coloraxes(cmin=1, cmax=joined[f'{variable}_{dummy_code_hours[hour]}'].max(),
                              colorscale=[
                                  [0, 'rgba(13, 8, 135, .6)'],
                                  # [.0001, 'rgba(13, 8, 135, .6)'],
@@ -247,10 +363,10 @@ print("computing layout")
 # ])
 if __name__ == '__main__':
     app.run_server(
-        # debug=True)
-        host='127.0.0.1',
-        port='7080',
-        use_reloader=False,
-        dev_tools_ui=True,
-        dev_tools_prune_errors=True
-    )
+        debug=True)
+    #     host='127.0.0.1',
+    #     port='7080',
+    #     use_reloader=False,
+    #     dev_tools_ui=True,
+    #     dev_tools_prune_errors=True
+    # )
