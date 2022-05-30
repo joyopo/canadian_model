@@ -19,9 +19,9 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash import dash_table
 
-from dash.dependencies import Input, Output
-from dash_extensions import Download
-from dash_extensions.snippets import send_data_frame
+from dash.dependencies import Input, Output, State
+# from dash_extensions import Download
+# from dash_extensions.snippets import send_data_frame
 import pandas as pd
 import geopandas as gpd
 import geojson
@@ -131,7 +131,9 @@ app.layout = html.Div([
         id='data-table',
     ),
 
-    html.Button("Download", id="btn"), Download(id="download"),
+    html.Button("Download", id="btn"),
+    dcc.Download(id="download"),
+    dcc.Store(id='memory'),
 
     html.Div([dcc.Graph(id='choropleth')])  # style={'display': 'inline-block'}
 
@@ -185,11 +187,11 @@ def display_click_data(clickdata, variable, hour):
 
 @app.callback(
     Output('download', 'data'),
-    Input('data-table', 'data'),
-    Input('weather-dropdown', 'value'),
-    Input('btn', 'n_clicks')
+    Input('btn', 'n_clicks'),
+    State('data-table', 'data'),
+    State('weather-dropdown', 'value'),
 )
-def filter_and_download(data, variable, n_clicks):
+def filter_and_download(n_clicks, data, variable):
     lat = data[0]['latitude']
     lon = data[0]['longitude']
     # function to get coordinates of square around click point here
@@ -233,7 +235,20 @@ def filter_and_download(data, variable, n_clicks):
     # df_to_transpose = download_df_f[columns_to_transpose]
     # download_df_f = download_df_f.drop(columns_to_transpose)
 
-    return send_data_frame(download_df.to_csv, f'{country}_{variable}.csv')
+    # return download_df.to_dict()
+    return dcc.send_data_frame(download_df.to_csv, f'{country}_weather_portal.csv')
+
+
+
+# @app.callback(
+#     Output('download', 'data'),
+#     Input('memory', 'data'),
+#     Input('btn', 'n_clicks')
+# )
+# def download_data(data, n_clicks):
+#     download_df = pd.DataFrame(data)
+#     return dcc.send_data_frame(download_df.to_csv, f'{country}_weather_portal.csv')
+
 
 @app.callback(
     Output("choropleth", 'figure'),
