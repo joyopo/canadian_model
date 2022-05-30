@@ -224,7 +224,7 @@ def filter_and_download(n_clicks, data, variable):
 
     # add 'hours' to end of forecast columns
     for col in download_df.columns:
-        if col.startswith('t2m'):
+        if col.startswith(variable):
             download_df = download_df.rename(columns={col: col + '_hours'})
     download_df = download_df.rename(columns={'valid_time_0': 'forecast_start_time'})
 
