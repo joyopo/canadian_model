@@ -13,8 +13,8 @@ from django_plotly_dash import DjangoDash
 import plotly.express as px
 from datetime import datetime
 
-# from .common import generate_plot_labels, generate_slider_marks
-from mysite.weather.common import generate_plot_labels, generate_slider_marks, generate_radio_options
+from .common import generate_plot_labels, generate_slider_marks
+# from mysite.weather.common import generate_plot_labels, generate_slider_marks, generate_radio_options
 
 # from . import file_download
 
@@ -22,8 +22,8 @@ token = 'pk.eyJ1Ijoiam9lLXAteW91bmc5NiIsImEiOiJja3p4aGs3YjUwMWo3MnVuNmw2eDQxaTUz
 px.set_mapbox_access_token(token)
 
 
-# app = DjangoDash('pakistan_watersheds')
-app = dash.Dash(__name__)
+app = DjangoDash('pakistan_watersheds')
+# app = dash.Dash(__name__)
 
 
 print("reading geojson")
@@ -85,7 +85,8 @@ app.layout = html.Div([
             'id': 'variable_value'
         }
     ],
-        data=[]
+        data=[],
+        row_deletable=True
     ),
 
     html.Button("Download", id="btn"),
@@ -123,7 +124,6 @@ print('building plot')
     Input('weather-dropdown', 'value'),
     Input('hour-slider', 'value'),
     State('data-table', 'data')
-
 )
 def display_click_data(clickdata, variable, hour, existing_data):
     json_string = json.dumps(clickdata)
@@ -158,41 +158,42 @@ def display_click_data(clickdata, variable, hour, existing_data):
     State('weather-dropdown', 'value'),
 )
 def filter_and_download(n_clicks, data, variable):
-    hybas_ids = []
-    for i in data:
-        hybas_ids.append(i['hybas_id'])
+    if n_clicks is not None:
+        hybas_ids = []
+        for i in data:
+            hybas_ids.append(i['hybas_id'])
 
-    download_df = pd.DataFrame(data={}, columns=watershed_data_grouped.columns)
-    for i in hybas_ids:
-        filtered_row = watershed_data_grouped.loc[(watershed_data_grouped['HYBAS_ID'] == i)]
-        download_df = download_df.append(filtered_row)
+        download_df = pd.DataFrame(data={}, columns=watershed_data_grouped.columns)
+        for i in hybas_ids:
+            filtered_row = watershed_data_grouped.loc[(watershed_data_grouped['HYBAS_ID'] == i)]
+            download_df = download_df.append(filtered_row)
 
 
-    # filter download_df to just the variable selected
-    cols_to_keep = ['HYBAS_ID', 'valid_time_0']
-    for col in download_df.columns:
-        if col.startswith(variable) and not col.endswith('binned'):
-            cols_to_keep.append(col)
+        # filter download_df to just the variable selected
+        cols_to_keep = ['HYBAS_ID', 'valid_time_0']
+        for col in download_df.columns:
+            if col.startswith(variable) and not col.endswith('binned'):
+                cols_to_keep.append(col)
 
-    download_df = download_df[cols_to_keep]
+        download_df = download_df[cols_to_keep]
 
-    # add 'hours' to end of forecast columns
-    for col in download_df.columns:
-        if col.startswith(variable):
-            download_df = download_df.rename(columns={col: col + '_hours'})
+        # add 'hours' to end of forecast columns
+        for col in download_df.columns:
+            if col.startswith(variable):
+                download_df = download_df.rename(columns={col: col + '_hours'})
 
-    # rename valid_time column
-    download_df = download_df.rename(columns={'valid_time_0': 'forecast_start_time'})
+        # rename valid_time column
+        download_df = download_df.rename(columns={'valid_time_0': 'forecast_start_time'})
 
-    # columns_to_transpose = []
-    # for col in download_df_f:
-    #     if col.startswith('t2m'):
-    #         columns_to_transpose.append(col)
-    # df_to_transpose = download_df_f[columns_to_transpose]
-    # download_df_f = download_df_f.drop(columns_to_transpose)
+        # columns_to_transpose = []
+        # for col in download_df_f:
+        #     if col.startswith('t2m'):
+        #         columns_to_transpose.append(col)
+        # df_to_transpose = download_df_f[columns_to_transpose]
+        # download_df_f = download_df_f.drop(columns_to_transpose)
 
-    # return download_df.to_dict()
-    return dcc.send_data_frame(download_df.to_csv, f'{country}_watersheds_weather_portal.csv')
+        # return download_df.to_dict()
+        return dcc.send_data_frame(download_df.to_csv, f'{country}_watersheds_weather_portal.csv')
 
 
 @app.callback(
