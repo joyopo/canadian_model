@@ -56,54 +56,7 @@ print('computing layout')
 
 grid_layout = grid_layout(slider_marks)
 
-app.layout = html.Div([
-    # html.H1("Pakistan Weather Portal"),
-    # html.Div([
-    #     html.P('choose a weather variable from the dropdown below to overlay on the map')
-    # ]),
-    html.Div([dcc.Dropdown(
-        options=[
-            {'label': 'Surface Temperature (celsius)', 'value': 't2m'},
-            {'label': 'Wind Speed (meters/second)', 'value': 'si10'},
-            {'label': 'Snow Depth (meters)', 'value': 'sde'},
-            {'label': 'Surface Precipitation Rate (kg m-2 sec-1)', 'value': 'prate'}
-        ],
-        value='t2m',
-        id='weather-dropdown',
-        placeholder='Select a Weather Variable'
-    )], style={'marginBottom': 20}),
-
-    html.Div([dcc.Slider(
-        step=1,
-        marks=slider_marks,
-        value=0,
-        id='hour-slider'
-    )], style={
-        'border': '1px grey solid',
-        'padding': 10,
-        'marginBottom': 20}),
-
-    # html.Table([
-    #     html.Tr([html.Td(['Latitude']), html.Td(id='lat')]),
-    #     html.Tr([html.Td(['Longitude']), html.Td(id='lon')]),
-    #     html.Tr([html.Td(['Value']), html.Td(id='val')]),
-    #
-    # ]),
-
-    # html.Pre(id='click-data'),
-    dash_table.DataTable(
-        id='data-table',
-        row_deletable=True
-    ),
-
-    html.Button("Download", id="btn"),
-    dcc.Download(id="download"),
-    dcc.Store(id='memory'),
-
-    html.Div([dcc.Graph(id='choropleth')])  # style={'display': 'inline-block'}
-
-    ]
-)
+app.layout = grid_layout
 
 print('making plot')
 
