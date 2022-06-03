@@ -1,3 +1,8 @@
+import pandas as pd
+import dash_core_components as dcc
+import dash_html_components as html
+from dash import dash_table
+
 PROJECT_ROOT_PATH = '/Users/jpy/PycharmProjects'
 
 COUNTRIES = ['pakistan', 'canada']
@@ -102,3 +107,128 @@ def generate_radio_options():
             pass
 
     return options
+
+
+# --------------------- Dash Functions ---------------------
+
+
+def display_click_data_in_datatable(variable, hour, clickdata, df, dummy_code_hours):
+    location = clickdata['points'][0]['location']
+    latitude = clickdata['points'][0]['customdata'][0]
+    longitude = clickdata['points'][0]['customdata'][1]
+    value = df.loc[(df.id == location), f'{variable}_{dummy_code_hours[hour]}'].item()
+    # data['points'][0]['customdata'][2]
+    # 'id' is the row id
+    data = [
+        {
+            'location_id': location,
+            'latitude': latitude,
+            'longitude': longitude,
+            f'{variable}_{dummy_code_hours[hour]}': value,
+            'id': 0}
+    ]
+    data_table_columns = [{
+        'name': 'latitude',
+        'id': 'latitude'
+    }, {
+        'name': 'longitude',
+        'id': 'longitude'
+    }, {
+        'name': 'location_id',
+        'id': 'location_id'
+    }, {
+        'name': f'{variable}_{dummy_code_hours[hour]}',
+        'id': f'{variable}_{dummy_code_hours[hour]}'
+    }]
+
+    return data_table_columns, data
+
+
+def filter_and_download_grid(data, variable, df):
+    lat = data[0]['latitude']
+    lon = data[0]['longitude']
+    # function to get coordinates of square around click point here
+
+    lat_lon_list = []
+    lat_lon_list.append([lat, lon])
+
+    lat_lon_list.append([lat + .15, lon])
+    lat_lon_list.append([lat - .15, lon])
+    lat_lon_list.append([lat, lon + .15])
+    lat_lon_list.append([lat, lon - .15])
+
+    lat_lon_list.append([lat + .15, lon + .15])
+    lat_lon_list.append([lat - .15, lon - .15])
+    lat_lon_list.append([lat + .15, lon - .15])
+    lat_lon_list.append([lat - .15, lon + .15])
+
+    download_df = pd.DataFrame(data={}, columns=df.columns)
+    for i in lat_lon_list:
+        filtered_row = df.loc[(df['latitude'] == i[0]) & (df['longitude'] == i[1])]
+        download_df = download_df.append(filtered_row)
+
+    # filter download_df to just the variable selected
+    cols_to_keep = ['latitude', 'longitude', 'id', 'valid_time_0']
+    for col in download_df.columns:
+        if col.startswith(variable) and not col.endswith('binned'):
+            cols_to_keep.append(col)
+
+    download_df = download_df[cols_to_keep]
+
+    # add 'hours' to end of forecast columns
+    for col in download_df.columns:
+        if col.startswith(variable):
+            download_df = download_df.rename(columns={col: col + '_hours'})
+    download_df = download_df.rename(columns={'valid_time_0': 'forecast_start_time'})
+
+    return download_df
+
+
+def grid_layout(slider_marks):
+    layout = html.Div([
+        html.Div([dcc.Dropdown(
+            options=[
+                {'label': 'Surface Temperature (celsius)', 'value': 't2m'},
+                {'label': 'Wind Speed (meters/second)', 'value': 'si10'},
+                {'label': 'Snow Depth (meters)', 'value': 'sde'},
+                {'label': 'Surface Precipitation Rate (kg m-2 sec-1)', 'value': 'prate'}
+            ],
+            value='t2m',
+            id='weather-dropdown',
+            placeholder='Select a Weather Variable'
+        )], style={'marginBottom': 20}),
+
+        html.Div([dcc.Slider(
+            step=1,
+            marks=slider_marks,
+            value=0,
+            id='hour-slider'
+        )], style={
+            'border': '1px grey solid',
+            'padding': 10,
+            'marginBottom': 20}),
+
+        # html.Table([
+        #     html.Tr([html.Td(['Latitude']), html.Td(id='lat')]),
+        #     html.Tr([html.Td(['Longitude']), html.Td(id='lon')]),
+        #     html.Tr([html.Td(['Value']), html.Td(id='val')]),
+        #
+        # ]),
+
+        # html.Pre(id='click-data'),
+        dash_table.DataTable(
+            id='data-table',
+            row_deletable=True
+        ),
+
+        html.Button("Download", id="btn"),
+        dcc.Download(id="download"),
+        dcc.Store(id='memory'),
+
+        html.Div([dcc.Graph(id='choropleth')])  # style={'display': 'inline-block'}
+
+        ]
+    )
+
+    return grid_layout
+

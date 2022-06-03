@@ -1,38 +1,18 @@
-# from mysite.weather.make_plot import (
-#     make_plot,
-#     group_data,
-#     join_provinces,
-#     process_raw_df,
-#     read_provinces_gjson,
-#     read_provinces_geopands,
-#     geographic_division_ids,
-#     get_data,
-#     df_to_gdf,
-#     spatial_join_and_group
-#     )
-# from mysite.weather import file_download
 from . import file_download
-
-
-import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash import dash_table
 
 from dash.dependencies import Input, Output, State
-# from dash_extensions import Download
-# from dash_extensions.snippets import send_data_frame
 import pandas as pd
 import geopandas as gpd
-import geojson
 import json
-from urllib.request import urlopen
-from django_plotly_dash import DjangoDash
 import plotly.express as px
-import plotly.graph_objects as go
 # from dash_app_code import token
 from django_plotly_dash import DjangoDash
-from .common import generate_plot_labels, generate_slider_marks, generate_radio_options
+from .common import generate_plot_labels, generate_slider_marks, generate_radio_options, \
+    display_click_data_in_datatable, filter_and_download_grid, grid_layout
+
 # from mysite.weather.common import generate_plot_labels, generate_slider_marks, generate_radio_options
 
 # app = dash.Dash(__name__)
@@ -59,29 +39,13 @@ df = pd.read_csv(
 gdf = file_download.df_to_gdf(df)
 
 # joining grid shapes and data
+print("joining gdfs")
 grid_gdf = gpd.read_file(f'/Users/jpy/Documents/{country}_grid.geojson')
 # gdf.drop('index_right', axis=1, inplace=True)
 joined = gpd.sjoin(gdf, grid_gdf, how='left')
 columns = list(gdf.columns) + ['id']
 joined = joined[columns]
 
-print("joining gdfs")
-# joined_df = gpd.sjoin(pakistan_gdf, gdf, how='left')
-
-# bounded scatter
-
-# aggregate data on keyword
-
-
-# data_grouped = joined_df.dropna()
-# data_grouped = joined_df.groupby('ADM2_PCODE')[['t2m', 'prate', 'si10', 'sde']].agg(['mean'])
-# data_grouped.reset_index(inplace=True, drop=False)
-# data_grouped.columns = ["_".join(a) for a in data_grouped.columns.to_flat_index()]
-
-
-# join aggregated data with locations
-# last_join_gdf = pd.merge(left=pakistan_gdf, right=data_grouped, how='right')
-# last_geojson = json.loads(last_join_gdf.to_json())
 
 print('done with data')
 print('making labels')
@@ -90,7 +54,7 @@ radio_options = generate_radio_options()
 slider_marks, dummy_code_hours = generate_slider_marks()
 print('computing layout')
 
-
+grid_layout = grid_layout(slider_marks)
 
 app.layout = html.Div([
     # html.H1("Pakistan Weather Portal"),
@@ -129,6 +93,7 @@ app.layout = html.Div([
     # html.Pre(id='click-data'),
     dash_table.DataTable(
         id='data-table',
+        row_deletable=True
     ),
 
     html.Button("Download", id="btn"),
@@ -153,36 +118,14 @@ print('making plot')
 def display_click_data(clickdata, variable, hour):
     json_string = json.dumps(clickdata)
     data = json.loads(json_string)
-    location = data['points'][0]['location']
-    latitude = data['points'][0]['customdata'][0]
-    longitude = data['points'][0]['customdata'][1]
-    value = joined.loc[(joined.id == location), f'{variable}_{dummy_code_hours[hour]}'].item()
-    # data['points'][0]['customdata'][2]
-    # 'id' is the row id
-    data = [
-        {
-            'location_id': location,
-            'latitude': latitude,
-            'longitude': longitude,
-            f'{variable}_{dummy_code_hours[hour]}': value,
-            'id': 0}
-    ]
-    data_table_columns = [{
-        'name': 'latitude',
-        'id': 'latitude'
-    }, {
-        'name': 'longitude',
-        'id': 'longitude'
-    }, {
-        'name': 'location_id',
-        'id': 'location_id'
-    }, {
-        'name': f'{variable}_{dummy_code_hours[hour]}',
-        'id': f'{variable}_{dummy_code_hours[hour]}'
-    }]
-
+    data_table_columns, data = display_click_data_in_datatable(
+        variable=variable,
+        hour=hour,
+        clickdata=data,
+        df=joined,
+        dummy_code_hours=dummy_code_hours
+    )
     return data_table_columns, data
-    # return json.dumps(clickData)
 
 
 @app.callback(
@@ -192,41 +135,11 @@ def display_click_data(clickdata, variable, hour):
     State('weather-dropdown', 'value'),
 )
 def filter_and_download(n_clicks, data, variable):
-    lat = data[0]['latitude']
-    lon = data[0]['longitude']
-    # function to get coordinates of square around click point here
-
-    lat_lon_list = []
-    lat_lon_list.append([lat, lon])
-
-    lat_lon_list.append([lat + .15, lon])
-    lat_lon_list.append([lat - .15, lon])
-    lat_lon_list.append([lat, lon + .15])
-    lat_lon_list.append([lat, lon - .15])
-
-    lat_lon_list.append([lat + .15, lon + .15])
-    lat_lon_list.append([lat - .15, lon - .15])
-    lat_lon_list.append([lat + .15, lon - .15])
-    lat_lon_list.append([lat - .15, lon + .15])
-
-    download_df = pd.DataFrame(data={}, columns=joined.columns)
-    for i in lat_lon_list:
-        filtered_row = joined.loc[(joined['latitude'] == i[0]) & (joined['longitude'] == i[1])]
-        download_df = download_df.append(filtered_row)
-
-    # filter download_df to just the variable selected
-    cols_to_keep = ['latitude', 'longitude', 'id', 'valid_time_0']
-    for col in download_df.columns:
-        if col.startswith(variable) and not col.endswith('binned'):
-            cols_to_keep.append(col)
-
-    download_df = download_df[cols_to_keep]
-
-    # add 'hours' to end of forecast columns
-    for col in download_df.columns:
-        if col.startswith(variable):
-            download_df = download_df.rename(columns={col: col + '_hours'})
-    download_df = download_df.rename(columns={'valid_time_0': 'forecast_start_time'})
+    download_df = filter_and_download_grid(
+        data=data,
+        variable=variable,
+        df=joined
+    )
 
     # columns_to_transpose = []
     # for col in download_df_f:
@@ -236,6 +149,7 @@ def filter_and_download(n_clicks, data, variable):
     # download_df_f = download_df_f.drop(columns_to_transpose)
 
     # return download_df.to_dict()
+
     return dcc.send_data_frame(download_df.to_csv, f'{country}_weather_portal.csv')
 
 
