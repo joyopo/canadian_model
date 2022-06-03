@@ -8,9 +8,11 @@ import xarray as xr
 import logging
 import time
 
+# swap imports for dash
+
 from . import make_plot  # , netcdf
 # from mysite.weather import make_plot, netcdf
-# from mysite.weather.common
+# from mysite.weather.common import PROJECT_ROOT_PATH, COUNTRIES, VARIABLES
 from .common import PROJECT_ROOT_PATH, COUNTRIES, VARIABLES
 
 
@@ -411,7 +413,7 @@ def run_aggregations(current_day, model_run_start):
         logging.info('reading watershed geofile')
         if country == 'canada':
             data_gdf.drop('index_right', inplace=True, axis=1)
-            watershed_gdf = gpd.read_file('/Users/jpy/Documents/weather_portal/final_watershed_geojsons/canada_watersheds_level6_simplified_0.005.geojson')
+            watershed_gdf = gpd.read_file('/Users/jpy/Documents/weather_portal/mapshaper_simplified/canadian_watersheds.geojson')
             watershed_gdf = watershed_gdf.set_crs(epsg=4326)
             watershed_grouped = make_plot.spatial_join_and_group(
                 data=data_gdf,
