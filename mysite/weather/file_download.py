@@ -1,7 +1,6 @@
 import json
 from datetime import datetime, timedelta
 import os
-from PIL import Image
 import pandas as pd
 import geopandas as gpd
 import xarray as xr
@@ -394,14 +393,14 @@ def bound_to_country(df, country):
 #     print('done')
 
 
-def create_image():
-    resolution = 15
-    height = resolution * 671
-    width = resolution * 1771
-    image = Image.new('RGBA', (width, height))
-    pixels = image.load()
-
-    data = pd.read_csv(f'{PROJECT_ROOT_PATH}/canadian_model/saved_data/pakistan/2022-02-23_17-21-25.csv')
+# def create_image():
+#     resolution = 15
+#     height = resolution * 671
+#     width = resolution * 1771
+#     image = Image.new('RGBA', (width, height))
+#     pixels = image.load()
+#
+#     data = pd.read_csv(f'{PROJECT_ROOT_PATH}/canadian_model/saved_data/pakistan/2022-02-23_17-21-25.csv')
 
 
 def run_aggregations(current_day, model_run_start):

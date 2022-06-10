@@ -11,7 +11,7 @@ import plotly.express as px
 # from dash_app_code import token
 from django_plotly_dash import DjangoDash
 from .common import generate_plot_labels, generate_slider_marks, generate_radio_options, \
-    display_click_data_in_datatable, filter_and_download_grid, grid_layout
+    display_click_grid_data_in_datatable, filter_and_download_grid, grid_layout
 
 # from mysite.weather.common import generate_plot_labels, generate_slider_marks, generate_radio_options
 
@@ -71,7 +71,7 @@ print('making plot')
 def display_click_data(clickdata, variable, hour):
     json_string = json.dumps(clickdata)
     data = json.loads(json_string)
-    data_table_columns, data = display_click_data_in_datatable(
+    data_table_columns, data = display_click_grid_data_in_datatable(
         variable=variable,
         hour=hour,
         clickdata=data,
