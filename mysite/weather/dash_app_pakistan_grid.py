@@ -1,7 +1,9 @@
 from . import file_download
+# import mysite.weather.file_download as file_download
 import dash_core_components as dcc
 import dash_html_components as html
 from dash import dash_table
+import dash
 
 from dash.dependencies import Input, Output, State
 import pandas as pd
@@ -13,7 +15,8 @@ from django_plotly_dash import DjangoDash
 from .common import generate_plot_labels, generate_slider_marks, generate_radio_options, \
     display_click_grid_data_in_datatable, filter_and_download_grid, grid_layout
 
-# from mysite.weather.common import generate_plot_labels, generate_slider_marks, generate_radio_options
+# from mysite.weather.common import generate_plot_labels, generate_slider_marks, generate_radio_options, \
+#     display_click_grid_data_in_datatable, filter_and_download_grid, grid_layout
 
 # app = dash.Dash(__name__)
 app = DjangoDash('pakistan_grid')
@@ -53,8 +56,9 @@ labels = generate_plot_labels()
 radio_options = generate_radio_options()
 slider_marks, dummy_code_hours = generate_slider_marks()
 print('computing layout')
+start_time = df['valid_time_0'][0]
 
-grid_layout = grid_layout(slider_marks)
+grid_layout = grid_layout(slider_marks, start_time)
 
 app.layout = grid_layout
 
@@ -134,10 +138,10 @@ def make_choropleth(variable, hour):
         zoom=4,
         center={'lat': 30, 'lon': 68},
         height=800,
-        width=1000,
+        # width=1000,
         labels=labels,  # .update({'ADM2_PCODE_': 'Administrative Boundary Code'}),
         hover_data=['longitude', 'latitude', f'{variable}_{dummy_code_hours[hour]}'],
-        title='Weather Variables Visualized Over 0.15 Degree Resolution',
+        # title='Weather Variables Visualized Over 0.15 Degree Resolution',
         custom_data=['latitude', 'longitude', f'{variable}_{dummy_code_hours[hour]}']
     )
 
@@ -150,6 +154,11 @@ def make_choropleth(variable, hour):
     fig.update_layout(
         autosize=True,
         # sliders=[{'len': 800}, {'lenmode': 'pixels'}]
+    )
+
+    fig.update_coloraxes(
+        colorbar_orientation='h',
+        colorbar_title_side='top'
     )
 
     # test

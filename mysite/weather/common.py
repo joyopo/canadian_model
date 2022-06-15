@@ -61,7 +61,7 @@ def generate_plot_labels():
     for hour in [int(x) for x in list(VARIABLES.keys())]:
         hour_forecast_text[hour] = f'{hour} hr Forecast'
         for variable in column_names:
-            plot_labels[f'{variable}_{hour}'] = f'{hour_forecast_text[hour]} | {VARIABLE_ABRV[variable]}'
+            plot_labels[f'{variable}_{hour}'] = f'{hour_forecast_text[hour]} | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
 
     return plot_labels
 
@@ -115,8 +115,10 @@ def generate_radio_options():
 
 # --------------------- Dash Functions ---------------------
 
-def grid_layout(slider_marks):
+def grid_layout(slider_marks, forecast_start_time):
     layout = html.Div([
+        html.H3(children=f'Forecast hours start from the latest data refresh at: {forecast_start_time}',
+                id='forecast_start'),
         html.Div([dcc.Dropdown(
             options=[
                 {'label': 'Surface Temperature (celsius)', 'value': 't2m'},
@@ -147,8 +149,23 @@ def grid_layout(slider_marks):
         # ]),
 
         # html.Pre(id='click-data'),
+        html.Pre('Click a data point on the map to fill in the data table below'),
+
         dash_table.DataTable(
             id='data-table',
+            columns=[{
+                'name': 'latitude',
+                'id': 'latitude'
+            }, {
+                'name': 'longitude',
+                'id': 'longitude'
+            }, {
+                'name': 'location_id',
+                'id': 'location_id'
+            }, {
+                'name': 'variable_value',
+                'id': 'variable_value'
+            }]
         ),
 
         html.Div([
@@ -170,8 +187,10 @@ def grid_layout(slider_marks):
     return layout
 
 
-def watershed_layouts(slider_marks):
+def watershed_layouts(slider_marks, forecast_start_time):
     layout = html.Div([
+        html.H3(children=f'Forecast hours start from the latest data refresh at: {forecast_start_time}',
+                id='forecast_start'),
 
         html.Div([dcc.Dropdown(
             options=[
@@ -215,7 +234,14 @@ def watershed_layouts(slider_marks):
             row_deletable=True
         ),
 
-        html.Button("Download", id="btn"),
+        html.Div([
+            html.Button("Download Data", id="btn")
+        ], style={
+            # 'border': '1px grey solid',
+            'padding': 10,
+            'marginBottom': 20
+            # 'marginTop': 10
+        }),
         dcc.Download(id="download"),
         dcc.Store(id='memory'),
         html.Div([dcc.Graph(id='choropleth')])]
@@ -229,21 +255,23 @@ def append_datatable_row(variable, hour, clickdata, existing_data, df, dummy_cod
     value = df.loc[(df['HYBAS_ID'] == hybas_id), f'{variable}_{dummy_code_hours[hour]}'].item()
     # 'id' is the row id
 
+    data_column_name = f'{dummy_code_hours[hour]} hr Forecast | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
+
     data_table_columns = [
         {
             'name': 'hybas_id',
             'id': 'hybas_id'
         },
         {
-            'name': f'{variable}_{dummy_code_hours[hour]}',  # f'{dummy_code_hours[hour]} hour {VARIABLE_ABRV[variable]}',
-            'id': f'{variable}_{dummy_code_hours[hour]}'  # f'{dummy_code_hours[hour]} hour {VARIABLE_ABRV[variable]}'
+            'name': data_column_name,
+            'id': data_column_name
         }
     ]
 
     existing_data.append(
         {
             'hybas_id': hybas_id,
-            f'{variable}_{dummy_code_hours[hour]}': round(value, 2),
+            data_column_name: round(value, 2),
             'id': hybas_id}
     )
 
@@ -251,11 +279,14 @@ def append_datatable_row(variable, hour, clickdata, existing_data, df, dummy_cod
 
 
 def update_datatable_row(variable, hour, existing_data, df, dummy_code_hours):
+    data_column_name = f'{dummy_code_hours[hour]} hr Forecast | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
+
     for i in existing_data:
         hybas_id = i['hybas_id']
         value = df.loc[
             (df['HYBAS_ID'] == hybas_id), f'{variable}_{dummy_code_hours[hour]}'].item()
-        i[f'{variable}_{dummy_code_hours[hour]}'] = round(value, 2)
+        i[data_column_name] = round(value, 2)
+
 
     data_table_columns = [
         {
@@ -263,8 +294,8 @@ def update_datatable_row(variable, hour, existing_data, df, dummy_code_hours):
             'id': 'hybas_id'
         },
         {
-            'name': f'{variable}_{dummy_code_hours[hour]}',  # hour {VARIABLE_ABRV[variable]["name"]} {VARIABLE_ABRV[variable]["units"]}',
-            'id': f'{variable}_{dummy_code_hours[hour]}'  # f'{dummy_code_hours[hour]} hour {VARIABLE_ABRV[variable]["name"]} {VARIABLE_ABRV[variable]["units"]}'
+            'name': data_column_name,
+            'id': data_column_name
         }
     ]
 
@@ -278,12 +309,15 @@ def display_click_grid_data_in_datatable(variable, hour, clickdata, df, dummy_co
     value = df.loc[(df.id == location), f'{variable}_{dummy_code_hours[hour]}'].item()
     # data['points'][0]['customdata'][2]
     # 'id' is the row id
+
+    data_column_name = f'{dummy_code_hours[hour]} hr Forecast | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
+
     data = [
         {
             'location_id': location,
             'latitude': latitude,
             'longitude': longitude,
-            f'{variable}_{dummy_code_hours[hour]}': value,
+            data_column_name: value,
             'id': 0}
     ]
     data_table_columns = [{
@@ -296,8 +330,8 @@ def display_click_grid_data_in_datatable(variable, hour, clickdata, df, dummy_co
         'name': 'location_id',
         'id': 'location_id'
     }, {
-        'name': f'{variable}_{dummy_code_hours[hour]}',
-        'id': f'{variable}_{dummy_code_hours[hour]}'
+        'name': data_column_name,
+        'id': data_column_name
     }]
 
     return data_table_columns, data
@@ -337,8 +371,17 @@ def filter_and_download_grid(data, variable, df):
     # add 'hours' to end of forecast columns
     for col in download_df.columns:
         if col.startswith(variable):
-            download_df = download_df.rename(columns={col: col + '_hours'})
+            download_df = download_df.rename(columns={col: col + ' hour'})
+
+    # reformat columns
     download_df = download_df.rename(columns={'valid_time_0': 'forecast_start_time'})
+    download_df.columns = download_df.columns.str.replace(f'{variable}_', '')
+    download_df['weather_variable'] = VARIABLE_ABRV[variable]['name']
+    download_df['units'] = VARIABLE_ABRV[variable]['units']
+    download_df.reset_index(inplace=True, drop=True)
+    columns = list(download_df.columns.values)
+    columns = columns[-2:] + columns[:-2]
+    download_df = download_df[columns]
 
     return download_df
 

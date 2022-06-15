@@ -40,7 +40,8 @@ watershed_data_grouped = pd.read_csv(f'/Users/jpy/PycharmProjects/canadian_model
 print('making labels')
 labels = generate_plot_labels()
 slider_marks, dummy_code_hours = generate_slider_marks()
-layout = watershed_layouts(slider_marks)
+start_time = watershed_data_grouped['valid_time_0'][0]
+layout = watershed_layouts(slider_marks, start_time)
 
 
 print("computing layout")
@@ -131,10 +132,10 @@ def make_choropleth(variable, hour):
         zoom=2,
         center={'lat': 60, 'lon': -100},
         height=800,
-        width=1000,
+        # width=1000,
         labels=labels,
         hover_data=['HYBAS_ID', f'{variable}_{dummy_code_hours[hour]}'],
-        title='Weather variables aggregated over level 6 Pfafstetter watershed boundaries'
+        # title='Weather variables aggregated over level 6 Pfafstetter watershed boundaries'
 
     )
 
@@ -145,6 +146,12 @@ def make_choropleth(variable, hour):
 
     fig.update_layout(
         autosize=True,
+    )
+
+    fig.update_coloraxes(
+        colorbar_orientation='h',
+        colorbar_title_side='top'
+
     )
 
     return fig
