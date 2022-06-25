@@ -41,7 +41,13 @@ watershed_data_grouped = pd.read_csv(f'/Users/jpy/PycharmProjects/canadian_model
 print('making labels')
 labels = generate_plot_labels()
 slider_marks, dummy_code_hours = generate_slider_marks()
-start_time = watershed_data_grouped['valid_time_0'][0]
+
+# forecast start time
+start_time = f"{watershed_data_grouped['valid_time_0'][0]} UTC"
+if ':' not in start_time:
+    start_time = start_time.replace('UTC', '00:00 UTC')
+
+# define app layout
 layout = watershed_layouts(slider_marks, start_time)
 
 print("computing layout")

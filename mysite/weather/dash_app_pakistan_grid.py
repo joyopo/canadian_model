@@ -13,7 +13,7 @@ import plotly.express as px
 # from dash_app_code import token
 from django_plotly_dash import DjangoDash
 from .common import generate_plot_labels, generate_slider_marks, generate_radio_options, \
-    display_click_grid_data_in_datatable, filter_and_download_grid, grid_layout
+    display_click_grid_data_in_datatable, filter_and_download_grid, grid_layout, update_datatable_grid
 
 # from mysite.weather.common import generate_plot_labels, generate_slider_marks, generate_radio_options, \
 #     display_click_grid_data_in_datatable, filter_and_download_grid, grid_layout
@@ -56,33 +56,58 @@ labels = generate_plot_labels()
 radio_options = generate_radio_options()
 slider_marks, dummy_code_hours = generate_slider_marks()
 print('computing layout')
-start_time = df['valid_time_0'][0]
 
+# define start time
+start_time = f"{df['valid_time_0'][0]} UTC"
+if ':' not in start_time:
+    start_time = start_time.replace('UTC', '00:00 UTC')
+
+# define layout
 grid_layout = grid_layout(slider_marks, start_time)
 
 app.layout = grid_layout
 
 print('making plot')
 
-
 @app.callback(
     Output('data-table', 'columns'),
     Output('data-table', 'data'),
     Input('choropleth', 'clickData'),
     Input('weather-dropdown', 'value'),
-    Input('hour-slider', 'value')
+    Input('hour-slider', 'value'),
+    State('data-table', 'data')
 )
-def display_click_data(clickdata, variable, hour):
-    json_string = json.dumps(clickdata)
-    data = json.loads(json_string)
-    data_table_columns, data = display_click_grid_data_in_datatable(
+def update_grid_datatable(clickdata, variable, hour, existing_data, **kwargs):
+    data_table_columns, data = update_datatable_grid(
+        clickdata=clickdata,
         variable=variable,
         hour=hour,
-        clickdata=data,
+        existing_data=existing_data,
         df=joined,
-        dummy_code_hours=dummy_code_hours
+        dummy_code_hours=dummy_code_hours,
+        **kwargs
     )
+
     return data_table_columns, data
+
+# @app.callback(
+#     Output('data-table', 'columns'),
+#     Output('data-table', 'data'),
+#     Input('choropleth', 'clickData'),
+#     Input('weather-dropdown', 'value'),
+#     Input('hour-slider', 'value')
+# )
+# def display_click_data(clickdata, variable, hour):
+#     json_string = json.dumps(clickdata)
+#     data = json.loads(json_string)
+#     data_table_columns, data = display_click_grid_data_in_datatable(
+#         variable=variable,
+#         hour=hour,
+#         clickdata=data,
+#         df=joined,
+#         dummy_code_hours=dummy_code_hours
+#     )
+#     return data_table_columns, data
 
 
 @app.callback(
@@ -92,11 +117,12 @@ def display_click_data(clickdata, variable, hour):
     State('weather-dropdown', 'value'),
 )
 def filter_and_download(n_clicks, data, variable):
-    download_df = filter_and_download_grid(
-        data=data,
-        variable=variable,
-        df=joined
-    )
+    if n_clicks is not None:
+        download_df = filter_and_download_grid(
+            data=data,
+            variable=variable,
+            df=joined
+        )
 
     # columns_to_transpose = []
     # for col in download_df_f:
