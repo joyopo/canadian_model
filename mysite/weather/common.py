@@ -73,13 +73,13 @@ def generate_slider_marks():
     marks = {}
     for hour in [int(x) for x in list(VARIABLES.keys())]:
         if hour == 72:
-            marks[hour] = f'3 days'
+            marks[hour] = {"label": f'3 days', "style": {"writing-mode": "vertical-rl"}}
         elif hour == 168:
-            marks[hour] = '1 week'
+            marks[hour] = {"label": '1 week', "style": {"writing-mode": "vertical-rl"}}
         elif hour == 240:
-            marks[hour] = '10 days'
+            marks[hour] = {"label": '10 days', "style": {"writing-mode": "vertical-rl"}}
         else:
-            marks[hour] = f'{hour} hours'
+            marks[hour] = {"label": f'{hour} hours', "style": {"writing-mode": "vertical-rl"}}
 
     # create dictionary that translates dummy code integer to the actual hour
     dummy_code_hours = {}
@@ -128,7 +128,8 @@ def grid_layout(slider_marks, forecast_start_time):
         html.Div([
             html.Pre(['Choose a weather variable from the dropdown below to overlay on the map.'],
                      style={
-                         'padding': 10
+                         'padding': 10,
+                         'background-color': '#E0FFFF'
                      }),
             html.Div([dcc.Dropdown(
                 options=[
@@ -142,16 +143,17 @@ def grid_layout(slider_marks, forecast_start_time):
                 placeholder='Select a Weather Variable'
             )], style={'marginBottom': 20}),
             ], style={
-            'border': '1px grey solid',
+            'border': '2px grey solid',
             'padding': 10
 
         }),
 
         # slider and text
         html.Div([
-            html.Pre(['Adjust the slider below the map to set the temporal forecast hour.'],
+            html.Pre(['Adjust the slider below to set the temporal forecast hour.'],
                      style={
-                         'padding': 10
+                         'padding': 10,
+                         'background-color': '#E0FFFF'
                      }),
 
             html.Div([dcc.Slider(
@@ -162,9 +164,13 @@ def grid_layout(slider_marks, forecast_start_time):
             )], style={
                 'border': '1px grey solid',
                 'padding': 10,
-                'marginBottom': 20}),
+                'marginBottom': 20,
+                'height': 60,
+                'white-space': 'nowrap',
+                # 'font-size': '2px'
+            }),
             ], style={
-            'border': '1px grey solid',
+            'border': '2px grey solid',
             'padding': 10
 
         }),
@@ -180,7 +186,15 @@ def grid_layout(slider_marks, forecast_start_time):
 
         # datatable and text and button
         html.Div([
-            html.Pre('Click a data point on the map to fill in the data table below.'),
+            html.Div([
+                html.Pre('Click a data point on the map to fill in the data table below.'),
+                ],
+                style={
+                    'background-color': '#E0FFFF',
+                    'padding': 10,
+
+                }
+            ),
 
             dash_table.DataTable(
                 id='data-table',
@@ -209,17 +223,36 @@ def grid_layout(slider_marks, forecast_start_time):
                 # 'marginTop': 10
             }),
             ], style={
-            'border': '1px grey solid',
+            'border': '2px grey solid',
             'padding': 10
 
         }),
-            ], ),
+            ], style={
+            'display': 'inline-block',
+            'height': '800',
+            'vertical-align': 'middle',
+            'width': '50%'
+
+            # 'margin': 'auto',
+            # 'width': '50%'
+        }),
         dcc.Download(id="download"),
         dcc.Store(id='memory'),
 
-        html.Div([dcc.Graph(id='choropleth')])  # style={'display': 'inline-block'}
+        html.Div(
+            [
+                dcc.Graph(id='choropleth')
+            ], style={
+                'display': 'inline-block',
+                'vertical-align': 'top',
+                'border': '1px grey solid',
+                'width': '40%'
 
-        ]
+            })
+
+        ], style={
+            'margin': 'auto',
+            'width': '100%'}
     )
 
     return layout
@@ -537,7 +570,7 @@ def filter_and_download_watershed(data, variable, df, hour):
     download_df = pd.DataFrame(data={}, columns=df.columns)
     for i in hybas_ids:
         filtered_row = df.loc[(df['HYBAS_ID'] == i)]
-        download_df = download_df.append(filtered_row)
+        download_df = pd.concat([download_df, filtered_row], axis=0)
 
     # filter download_df to just the variable selected
     cols_to_keep = ['HYBAS_ID', 'valid_time_0']

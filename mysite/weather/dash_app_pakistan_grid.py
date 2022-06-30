@@ -16,7 +16,7 @@ from .common import generate_plot_labels, generate_slider_marks, generate_radio_
     display_click_grid_data_in_datatable, filter_and_download_grid, grid_layout, update_datatable_grid
 
 # from mysite.weather.common import generate_plot_labels, generate_slider_marks, generate_radio_options, \
-#     display_click_grid_data_in_datatable, filter_and_download_grid, grid_layout
+#     display_click_grid_data_in_datatable, filter_and_download_grid, grid_layout, update_datatable_grid
 
 # app = dash.Dash(__name__)
 app = DjangoDash('pakistan_grid')
@@ -163,7 +163,7 @@ def make_choropleth(variable, hour):
         opacity=.6,
         zoom=4,
         center={'lat': 30, 'lon': 68},
-        height=800,
+        height=500,
         # width=1000,
         labels=labels,  # .update({'ADM2_PCODE_': 'Administrative Boundary Code'}),
         hover_data=['longitude', 'latitude', f'{variable}_{dummy_code_hours[hour]}'],
@@ -177,8 +177,18 @@ def make_choropleth(variable, hour):
         autocolorscale=False,
         # colorscale=[[0, 'blue'], [.5, 'green'], [1, 'red']]
     )
+    sliders = [
+        {'font': {'size': 40}}
+        ]
     fig.update_layout(
         autosize=True,
+        margin=dict(
+            l=10,
+            r=10,
+            b=10,
+            t=10,
+        ),
+        sliders=sliders
         # sliders=[{'len': 800}, {'lenmode': 'pixels'}]
     )
 
