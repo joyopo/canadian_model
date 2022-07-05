@@ -1,5 +1,6 @@
 import json
 import logging
+import ipdb
 
 import pandas as pd
 from dash import dash_table, dcc, html
@@ -48,6 +49,9 @@ forecast_hour_variables = (
 
 for hr in time_steps:
     VARIABLES[hr] = forecast_hour_variables
+
+title_background = '#FFFFFF'
+container_background = '#c5ccd3'
 
 
 def generate_plot_labels():
@@ -118,6 +122,43 @@ def generate_radio_options():
 
 # --------------------- Dash Functions ---------------------
 
+pre_style = {
+    'padding': 10,
+    'background-color': title_background
+}
+dropdown_style = {'marginBottom': 20}
+div_style = {
+            'border': '2px white solid',
+            'padding': 10,
+            'background-color': container_background,
+
+        }
+slider_style = {
+                'border': '1px grey solid',
+                'padding': 10,
+                'marginBottom': 20,
+                'height': 60,
+                'white-space': 'nowrap',
+                'background-color': title_background
+                # 'font-size': '2px'
+            }
+button_style = {
+                # 'border': '1px grey solid',
+                'padding': 10,
+                'marginBottom': 20
+                # 'marginTop': 10
+            }
+section_style = {
+            'display': 'inline-block',
+            'height': '500',
+            'vertical-align': 'middle',
+            'width': '50%'
+
+            # 'margin': 'auto',
+            # 'width': '50%'
+        }
+
+
 def grid_layout(slider_marks, forecast_start_time):
     layout = html.Div([
         html.H3(children=f'Forecast hours start from the latest data refresh at: {forecast_start_time}',
@@ -127,10 +168,7 @@ def grid_layout(slider_marks, forecast_start_time):
         # dropdown and text
         html.Div([
             html.Pre(['Choose a weather variable from the dropdown below to overlay on the map.'],
-                     style={
-                         'padding': 10,
-                         'background-color': '#E0FFFF'
-                     }),
+                     style=pre_style),
             html.Div([dcc.Dropdown(
                 options=[
                     {'label': 'Surface Temperature (celsius)', 'value': 't2m'},
@@ -141,39 +179,21 @@ def grid_layout(slider_marks, forecast_start_time):
                 value='t2m',
                 id='weather-dropdown',
                 placeholder='Select a Weather Variable'
-            )], style={'marginBottom': 20}),
-            ], style={
-            'border': '2px grey solid',
-            'padding': 10
-
-        }),
+            )], style=dropdown_style),
+            ], style=div_style),
 
         # slider and text
         html.Div([
             html.Pre(['Adjust the slider below to set the temporal forecast hour.'],
-                     style={
-                         'padding': 10,
-                         'background-color': '#E0FFFF'
-                     }),
+                     style=pre_style),
 
             html.Div([dcc.Slider(
                 step=1,
                 marks=slider_marks,
                 value=0,
                 id='hour-slider'
-            )], style={
-                'border': '1px grey solid',
-                'padding': 10,
-                'marginBottom': 20,
-                'height': 60,
-                'white-space': 'nowrap',
-                # 'font-size': '2px'
-            }),
-            ], style={
-            'border': '2px grey solid',
-            'padding': 10
-
-        }),
+            )], style=slider_style),
+            ], style=div_style),
 
         # html.Table([
         #     html.Tr([html.Td(['Latitude']), html.Td(id='lat')]),
@@ -186,14 +206,8 @@ def grid_layout(slider_marks, forecast_start_time):
 
         # datatable and text and button
         html.Div([
-            html.Div([
-                html.Pre('Click a data point on the map to fill in the data table below.'),
-                ],
-                style={
-                    'background-color': '#E0FFFF',
-                    'padding': 10,
-
-                }
+            html.Pre(['Click a data point on the map to fill in the data table below.'],
+                style=pre_style
             ),
 
             dash_table.DataTable(
@@ -211,31 +225,20 @@ def grid_layout(slider_marks, forecast_start_time):
                     'name': 'variable_value',
                     'id': 'variable_value'
                 }],
-                data=[]
+                data=[],
+                row_deletable=True,
+                style_cell={'fontSize': 10},
+                style_header={'fontWeight': 'bold'}
+
+
             ),
 
             html.Div([
                 html.Button("Download Data", id="btn")
-            ], style={
-                # 'border': '1px grey solid',
-                'padding': 10,
-                'marginBottom': 20
-                # 'marginTop': 10
-            }),
-            ], style={
-            'border': '2px grey solid',
-            'padding': 10
-
-        }),
-            ], style={
-            'display': 'inline-block',
-            'height': '800',
-            'vertical-align': 'middle',
-            'width': '50%'
-
-            # 'margin': 'auto',
-            # 'width': '50%'
-        }),
+            ], style=button_style),
+            ], style=div_style
+        ),
+            ], style=section_style),
         dcc.Download(id="download"),
         dcc.Store(id='memory'),
 
@@ -263,12 +266,11 @@ def watershed_layouts(slider_marks, forecast_start_time):
         html.H3(children=f'Forecast hours start from the latest data refresh at: {forecast_start_time}',
                 id='forecast_start'),
 
-        # dropdown and text
+        html.Div([
+            # dropdown and text
         html.Div([
             html.Pre(['Choose a weather variable from the dropdown below to overlay on the map.'],
-                 style={
-                     'padding': 10
-                 }),
+                 style=pre_style),
 
             html.Div([dcc.Dropdown(
                 options=[
@@ -280,39 +282,26 @@ def watershed_layouts(slider_marks, forecast_start_time):
                 value='t2m',
                 id='weather-dropdown',
                 placeholder='Select a Weather Variable'
-            )], style={'marginBottom': 20}),
-            ], style={
-            'border': '1px grey solid',
-            'padding': 10
-
-        }),
+            )], style=dropdown_style),
+            ], style=div_style),
 
         # slider and text
         html.Div([
             html.Pre(['Adjust the slider below the map to set the temporal forecast hour.'],
-                     style={
-                         'padding': 10
-                     }),
+                     style=pre_style),
 
             html.Div([dcc.Slider(
                 step=1,
                 marks=slider_marks,
                 value=0,
                 id='hour-slider'
-            )], style={
-                'border': '1px grey solid',
-                'padding': 10,
-                'marginBottom': 20
-                # 'marginTop': 10
-            }),
-            ], style={
-            'border': '1px grey solid',
-            'padding': 10
-
-        }),
+            )], style=slider_style),
+            ], style=div_style),
 
         html.Div([
-            html.Pre('Click a data point on the map to fill in the data table below.'),
+            html.Pre(['Click a data point on the map to fill in the data table below.'],
+                     style=pre_style
+                     ),
 
             dash_table.DataTable(
                 id='data-table',
@@ -332,20 +321,22 @@ def watershed_layouts(slider_marks, forecast_start_time):
 
             html.Div([
                 html.Button("Download Data", id="btn")
-            ], style={
-                # 'border': '1px grey solid',
-                'padding': 10,
-                'marginBottom': 20
-                # 'marginTop': 10
-            }),
-            ], style={
-            'border': '1px grey solid',
-            'padding': 10
-
-        }),
+            ], style=button_style),
+            ], style=div_style
+        ),
+            ], style=section_style),
         dcc.Download(id="download"),
         dcc.Store(id='memory'),
-        html.Div([dcc.Graph(id='choropleth')])]
+        html.Div([dcc.Graph(id='choropleth')],
+                 style={
+                'display': 'inline-block',
+                'vertical-align': 'top',
+                'border': '1px grey solid',
+                'width': '40%'
+
+            }
+                 )
+    ]
     )
 
     return layout
@@ -612,6 +603,8 @@ def update_datatable_grid(clickdata, variable, hour, existing_data, df, dummy_co
     logging.info(f'kwargs are {kwargs}')
     logging.info(f'callback context: {kwargs["callback_context"]}')
     logging.info(f'callback context attributes: {dir(kwargs["callback_context"])}')
+
+    # ipdb.set_trace()
 
     if len(kwargs['callback_context'].triggered) > 0:
         triggered_id = kwargs['callback_context'].triggered[0]['prop_id']

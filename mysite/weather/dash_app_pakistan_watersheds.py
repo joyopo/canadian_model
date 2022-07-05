@@ -165,7 +165,7 @@ def make_choropleth(variable, hour):
         opacity=.65,
         zoom=4,
         center={'lat': 30, 'lon': 68},
-        height=800,
+        height=500,
         # width=1000,
         labels=labels,
         hover_data=['HYBAS_ID', f'{variable}_{dummy_code_hours[hour]}'],
@@ -180,6 +180,12 @@ def make_choropleth(variable, hour):
 
     fig.update_layout(
         autosize=True,
+        margin=dict(
+            l=10,
+            r=10,
+            b=10,
+            t=10,
+        ),
     )
 
     fig.update_coloraxes(

@@ -152,6 +152,12 @@ def make_choropleth(variable, hour):
 
     fig.update_layout(
         autosize=True,
+        margin=dict(
+            l=10,
+            r=10,
+            b=10,
+            t=10,
+        ),
     )
 
     fig.update_coloraxes(

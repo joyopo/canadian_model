@@ -1,21 +1,16 @@
-# from weather import make_plot
-from .common import generate_plot_labels, generate_slider_marks
-from . import make_plot, file_download
-    # make_plot,
-    # group_data,
-    # join_provinces,
-    # process_raw_df,
-    # read_provinces_gjson,
-    # read_provinces_geopands,
-    # geographic_division_ids,
-    # get_data,
-    # df_to_gdf,
-    # spatial_join_and_group
-    # )
+from .common import generate_plot_labels, generate_slider_marks, grid_layout, update_datatable_grid, \
+    filter_and_download_grid
+# from mysite.weather.common import generate_plot_labels, generate_slider_marks, generate_radio_options, \
+#     display_click_grid_data_in_datatable, filter_and_download_grid, grid_layout, update_datatable_grid
+
+from . import file_download
+# import mysite.weather.file_download as file_download
+
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import pandas as pd
 import geopandas as gpd
 import geojson
@@ -77,7 +72,7 @@ country = 'canada'
 df = pd.read_csv(
     f'/Users/jpy/PycharmProjects/canadian_model/mysite/live_data/{country}/{country}.csv')
 print('df to gdf')
-gdf = make_plot.df_to_gdf(df)
+gdf = file_download.df_to_gdf(df)
 print('done')
 
 grid_gdf = gpd.read_file('/Users/jpy/Documents/canada_grid.geojson')
@@ -89,47 +84,59 @@ joined = joined[columns]
 
 print('making labels')
 labels = generate_plot_labels()
+slider_marks, dummy_code_hours = generate_slider_marks()
+
+# define start time
+start_time = f"{df['valid_time_0'][0]} UTC"
+if ':' not in start_time:
+    start_time = start_time.replace('UTC', '00:00 UTC')
 
 
 print("computing layout")
-app.layout = html.Div([
-    # html.H1("Pakistan Weather Portal"),
-    # html.Div([
-    #     html.P('choose a weather variable from the dropdown below to overlay on the map')
-    # ]),
-    html.Div([dcc.Dropdown(
-        options=[
-            {'label': 'Surface Temperature (celsius)', 'value': 't2m'},
-            {'label': 'Wind Speed (meters/second)', 'value': 'si10'},
-            {'label': 'Snow Depth (meters)', 'value': 'sde'},
-            {'label': 'Surface Precipitation Rate (kg m-2 sec-1)', 'value': 'prate'}
-        ],
-        value='t2m',
-        id='weather-dropdown',
-        placeholder='Select a Weather Variable'
-    )], style={'marginBottom': 20}),
+grid_layout = grid_layout(slider_marks, start_time)
 
-    html.Div([dcc.Slider(
-        min=0,
-        max=240,
-        step=None,
-        marks={
-            0: '0 hours',
-            120: '120 hours',
-            240: '240 hours',
-        },
-        value=0,
+app.layout = grid_layout
 
-        id='hour-slider'
-    )], style={
-        'border': '1px grey solid',
-        'padding': 10,
-        'marginBottom': 20
-        # 'marginTop': 10
-    }),
 
-    html.Div([dcc.Graph(id='choropleth')])]
+@app.callback(
+    Output('data-table', 'columns'),
+    Output('data-table', 'data'),
+    Input('choropleth', 'clickData'),
+    Input('weather-dropdown', 'value'),
+    Input('hour-slider', 'value'),
+    State('data-table', 'data')
 )
+def update_grid_datatable(clickdata, variable, hour, existing_data, **kwargs):
+    if clickdata is not None:
+        data_table_columns, data = update_datatable_grid(
+            clickdata=clickdata,
+            variable=variable,
+            hour=hour,
+            existing_data=existing_data,
+            df=joined,
+            dummy_code_hours=dummy_code_hours,
+            **kwargs
+        )
+
+    return data_table_columns, data
+
+
+@app.callback(
+    Output('download', 'data'),
+    Input('btn', 'n_clicks'),
+    State('data-table', 'data'),
+    State('weather-dropdown', 'value'),
+)
+def filter_and_download(n_clicks, data, variable):
+    if n_clicks is not None:
+        download_df = filter_and_download_grid(
+            data=data,
+            variable=variable,
+            df=joined
+        )
+
+    return dcc.send_data_frame(download_df.to_csv, f'{country}_weather_portal.csv')
+
 
 print('making plot')
 @app.callback(
@@ -143,23 +150,38 @@ def make_choropleth(variable, hour):
         geojson=grid,
         locations='id',
         featureidkey='properties.id',
-        color=f'{variable}_{hour}_binned',
+        color=f'{variable}_{dummy_code_hours[hour]}',
         mapbox_style="satellite-streets",
         opacity=.65,
         zoom=2,
         center={'lat': 60, 'lon': -100},
         height=800,
-        width=1000,
+        # width=1000,
         labels=labels,
-        hover_data=['longitude', 'latitude', f'{variable}_{hour}'],
-        title='Weather Variables Visualized Over 0.15 Degree Resolution'
+        hover_data=['longitude', 'latitude', f'{variable}_{dummy_code_hours[hour]}'],
+        # title='Weather Variables Visualized Over 0.15 Degree Resolution'
+        custom_data=['latitude', 'longitude', f'{variable}_{dummy_code_hours[hour]}']
 
     )
 
-    fig.update_traces(marker_line_width=0)
+    fig.update_traces(
+        marker_line_width=0,
+    )
     fig.update_layout(
         autosize=True,
+        margin=dict(
+            l=10,
+            r=10,
+            b=10,
+            t=10,
+        )
     )
+
+    fig.update_coloraxes(
+        colorbar_orientation='h',
+        colorbar_title_side='top'
+    )
+
     # if variable != 't2m':
     #     fig.update_coloraxes(
     #         # cmin=1,
@@ -188,10 +210,10 @@ print("finished building plot")
 
 if __name__ == '__main__':
     app.run_server(
-        # debug=True,
-        host='127.0.0.1',
-        port=8055,
-        use_reloader=False,
-        dev_tools_ui=True,
-        dev_tools_prune_errors=True
+        debug=True,
+        # host='127.0.0.1',
+        # port=8055,
+        # use_reloader=False,
+        # dev_tools_ui=True,
+        # dev_tools_prune_errors=True
     )

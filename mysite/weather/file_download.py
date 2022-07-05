@@ -105,6 +105,10 @@ BINS = {
 
 
 def df_to_gdf(df):
+    """
+    :param df: df must have columns 'latitude' and 'longitude'
+    :return: geodataframe with points geomoetry
+    """
     gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.longitude, df.latitude))
     gdf = gdf.set_crs(epsg=4326)
 

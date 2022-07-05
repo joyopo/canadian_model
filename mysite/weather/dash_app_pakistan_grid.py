@@ -31,7 +31,7 @@ px.set_mapbox_access_token(token)
 with open('/Users/jpy/Documents/pakistan_grid.geojson') as f:
     pakistan_gjson = json.load(f)
 # nb_gjson = read_provinces_gjson('https://gnb.socrata.com/api/geospatial/js6t-a99d?method=export&format=GeoJSON')
-pakistan_gdf = gpd.read_file('/Users/jpy/Downloads/pak_adm_ocha_pco_gaul_20181218_SHP/admin2')
+# pakistan_gdf = gpd.read_file('/Users/jpy/Downloads/pak_adm_ocha_pco_gaul_20181218_SHP/admin2')
 # pakistan_json = pakistan_gdf.to_json()
 # pakistan_gjson = json.loads(pakistan_json)
 print('done reading gjson')
@@ -40,6 +40,7 @@ country = 'pakistan'
 df = pd.read_csv(
     f'/Users/jpy/PycharmProjects/canadian_model/mysite/live_data/{country}/{country}.csv')
 gdf = file_download.df_to_gdf(df)
+
 
 # joining grid shapes and data
 print("joining gdfs")
@@ -133,7 +134,7 @@ def filter_and_download(n_clicks, data, variable):
 
     # return download_df.to_dict()
 
-    return dcc.send_data_frame(download_df.to_csv, f'{country}_weather_portal.csv')
+        return dcc.send_data_frame(download_df.to_csv, f'{country}_weather_portal.csv')
 
 
 
@@ -177,9 +178,6 @@ def make_choropleth(variable, hour):
         autocolorscale=False,
         # colorscale=[[0, 'blue'], [.5, 'green'], [1, 'red']]
     )
-    sliders = [
-        {'font': {'size': 40}}
-        ]
     fig.update_layout(
         autosize=True,
         margin=dict(
@@ -188,7 +186,6 @@ def make_choropleth(variable, hour):
             b=10,
             t=10,
         ),
-        sliders=sliders
         # sliders=[{'len': 800}, {'lenmode': 'pixels'}]
     )
 
