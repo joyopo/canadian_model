@@ -41,11 +41,11 @@ VARIABLES = {
 }
 
 forecast_hour_variables = (
-        ['PRATE_SFC_0', 'precipitation_rate'],
-        ['TMP_TGL_2', 'temp'],
-        ['WIND_TGL_10', 'wind_speed'],
-        ['SNOD_SFC_0', 'snow_depth']
-    )
+    ['PRATE_SFC_0', 'precipitation_rate'],
+    ['TMP_TGL_2', 'temp'],
+    ['WIND_TGL_10', 'wind_speed'],
+    ['SNOD_SFC_0', 'snow_depth']
+)
 
 for hr in time_steps:
     VARIABLES[hr] = forecast_hour_variables
@@ -61,14 +61,15 @@ def generate_plot_labels():
     """
     plot_labels = {}
     column_names = VARIABLE_ABRV.keys()
-        # ['t2m', 'si10', 'sde', 'prate']
+    # ['t2m', 'si10', 'sde', 'prate']
 
     hour_forecast_text = {}
 
     for hour in [int(x) for x in list(VARIABLES.keys())]:
         hour_forecast_text[hour] = f'{hour} hr Forecast'
         for variable in column_names:
-            plot_labels[f'{variable}_{hour}'] = f'{hour_forecast_text[hour]} | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
+            plot_labels[
+                f'{variable}_{hour}'] = f'{hour_forecast_text[hour]} | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
 
     return plot_labels
 
@@ -128,35 +129,44 @@ pre_style = {
 }
 dropdown_style = {'marginBottom': 20}
 div_style = {
-            'border': '2px white solid',
-            'padding': 10,
-            'background-color': container_background,
+    'border': '2px white solid',
+    'padding': 10,
+    'background-color': container_background,
+    'margin-bottom': 10,
+    'margin-top': 10
 
-        }
+}
 slider_style = {
-                'border': '1px grey solid',
-                'padding': 10,
-                'marginBottom': 20,
-                'height': 60,
-                'white-space': 'nowrap',
-                'background-color': title_background
-                # 'font-size': '2px'
-            }
+    'border': '1px grey solid',
+    'padding': 10,
+    'marginBottom': 20,
+    'height': 60,
+    'white-space': 'nowrap',
+    'background-color': title_background
+    # 'font-size': '2px'
+}
 button_style = {
-                # 'border': '1px grey solid',
-                'padding': 10,
-                'marginBottom': 20
-                # 'marginTop': 10
-            }
+    # 'border': '1px grey solid',
+    'padding': 10,
+    'marginBottom': 20
+    # 'marginTop': 10
+}
 section_style = {
-            'display': 'inline-block',
-            'height': '500',
-            'vertical-align': 'middle',
-            'width': '50%'
+    'display': 'inline-block',
+    'height': '500',
+    'vertical-align': 'middle',
+    'width': '50%'
 
-            # 'margin': 'auto',
-            # 'width': '50%'
-        }
+    # 'margin': 'auto',
+    # 'width': '50%'
+}
+graph_style = {
+    'display': 'inline-block',
+    'vertical-align': 'top',
+    'border': '1px grey solid',
+    'width': '40%',
+    'margin-top': 10
+}
 
 
 def grid_layout(slider_marks, forecast_start_time):
@@ -165,97 +175,90 @@ def grid_layout(slider_marks, forecast_start_time):
                 id='forecast_start'),
 
         html.Div([
-        # dropdown and text
-        html.Div([
-            html.Pre(['Choose a weather variable from the dropdown below to overlay on the map.'],
-                     style=pre_style),
-            html.Div([dcc.Dropdown(
-                options=[
-                    {'label': 'Surface Temperature (celsius)', 'value': 't2m'},
-                    {'label': 'Wind Speed (meters/second)', 'value': 'si10'},
-                    {'label': 'Snow Depth (meters)', 'value': 'sde'},
-                    {'label': 'Surface Precipitation Rate (kg m-2 sec-1)', 'value': 'prate'}
-                ],
-                value='t2m',
-                id='weather-dropdown',
-                placeholder='Select a Weather Variable'
-            )], style=dropdown_style),
-            ], style=div_style),
-
-        # slider and text
-        html.Div([
-            html.Pre(['Adjust the slider below to set the temporal forecast hour.'],
-                     style=pre_style),
-
-            html.Div([dcc.Slider(
-                step=1,
-                marks=slider_marks,
-                value=0,
-                id='hour-slider'
-            )], style=slider_style),
-            ], style=div_style),
-
-        # html.Table([
-        #     html.Tr([html.Td(['Latitude']), html.Td(id='lat')]),
-        #     html.Tr([html.Td(['Longitude']), html.Td(id='lon')]),
-        #     html.Tr([html.Td(['Value']), html.Td(id='val')]),
-        #
-        # ]),
-
-        # html.Pre(id='click-data'),
-
-        # datatable and text and button
-        html.Div([
-            html.Pre(['Click a data point on the map to fill in the data table below.'],
-                style=pre_style
-            ),
-
-            dash_table.DataTable(
-                id='data-table',
-                columns=[{
-                    'name': 'latitude',
-                    'id': 'latitude'
-                }, {
-                    'name': 'longitude',
-                    'id': 'longitude'
-                }, {
-                    'name': 'location_id',
-                    'id': 'location_id'
-                }, {
-                    'name': 'variable_value',
-                    'id': 'variable_value'
-                }],
-                data=[],
-                row_deletable=True,
-                style_cell={'fontSize': 10},
-                style_header={'fontWeight': 'bold'}
-
-
-            ),
-
+            # dropdown and text
             html.Div([
-                html.Button("Download Data", id="btn")
-            ], style=button_style),
+                html.Pre(['Choose a weather variable from the dropdown below to overlay on the map.'],
+                         style=pre_style),
+                html.Div([dcc.Dropdown(
+                    options=[
+                        {'label': 'Surface Temperature (celsius)', 'value': 't2m'},
+                        {'label': 'Wind Speed (meters/second)', 'value': 'si10'},
+                        {'label': 'Snow Depth (meters)', 'value': 'sde'},
+                        {'label': 'Surface Precipitation Rate (kg m-2 sec-1)', 'value': 'prate'}
+                    ],
+                    value='t2m',
+                    id='weather-dropdown',
+                    placeholder='Select a Weather Variable'
+                )], style=dropdown_style),
+            ], style=div_style),
+
+            # slider and text
+            html.Div([
+                html.Pre(['Adjust the slider below to set the temporal forecast hour.'],
+                         style=pre_style),
+
+                html.Div([dcc.Slider(
+                    step=1,
+                    marks=slider_marks,
+                    value=0,
+                    id='hour-slider'
+                )], style=slider_style),
+            ], style=div_style),
+
+            # html.Table([
+            #     html.Tr([html.Td(['Latitude']), html.Td(id='lat')]),
+            #     html.Tr([html.Td(['Longitude']), html.Td(id='lon')]),
+            #     html.Tr([html.Td(['Value']), html.Td(id='val')]),
+            #
+            # ]),
+
+            # html.Pre(id='click-data'),
+
+            # datatable and text and button
+            html.Div([
+                html.Pre(['Click a data point on the map to fill in the data table below.'],
+                         style=pre_style
+                         ),
+
+                dash_table.DataTable(
+                    id='data-table',
+                    columns=[{
+                        'name': 'latitude',
+                        'id': 'latitude'
+                    }, {
+                        'name': 'longitude',
+                        'id': 'longitude'
+                    }, {
+                        'name': 'location_id',
+                        'id': 'location_id'
+                    }, {
+                        'name': 'variable_value',
+                        'id': 'variable_value'
+                    }],
+                    data=[],
+                    row_deletable=True,
+                    style_cell={'fontSize': 10},
+                    style_header={'fontWeight': 'bold'}
+
+                ),
+
+                html.Div([
+                    html.Button("Download Data", id="btn")
+                ], style=button_style),
             ], style=div_style
-        ),
-            ], style=section_style),
+            ),
+        ], style=section_style),
         dcc.Download(id="download"),
         dcc.Store(id='memory'),
 
         html.Div(
             [
                 dcc.Graph(id='choropleth')
-            ], style={
-                'display': 'inline-block',
-                'vertical-align': 'top',
-                'border': '1px grey solid',
-                'width': '40%'
+            ], style=graph_style)
 
-            })
-
-        ], style={
-            'margin': 'auto',
-            'width': '100%'}
+    ], style={
+        'margin': 'auto',
+        'width': '100%'}
     )
 
     return layout
@@ -268,76 +271,68 @@ def watershed_layouts(slider_marks, forecast_start_time):
 
         html.Div([
             # dropdown and text
-        html.Div([
-            html.Pre(['Choose a weather variable from the dropdown below to overlay on the map.'],
-                 style=pre_style),
+            html.Div([
+                html.Pre(['Choose a weather variable from the dropdown below to overlay on the map.'],
+                         style=pre_style),
 
-            html.Div([dcc.Dropdown(
-                options=[
-                    {'label': 'Surface Temperature (celsius)', 'value': 't2m'},
-                    {'label': 'Wind Speed (meters/second)', 'value': 'si10'},
-                    {'label': 'Snow Depth (meters)', 'value': 'sde'},
-                    {'label': 'Surface Precipitation Rate (kg m-2 sec-1)', 'value': 'prate'}
-                ],
-                value='t2m',
-                id='weather-dropdown',
-                placeholder='Select a Weather Variable'
-            )], style=dropdown_style),
+                html.Div([dcc.Dropdown(
+                    options=[
+                        {'label': 'Surface Temperature (celsius)', 'value': 't2m'},
+                        {'label': 'Wind Speed (meters/second)', 'value': 'si10'},
+                        {'label': 'Snow Depth (meters)', 'value': 'sde'},
+                        {'label': 'Surface Precipitation Rate (kg m-2 sec-1)', 'value': 'prate'}
+                    ],
+                    value='t2m',
+                    id='weather-dropdown',
+                    placeholder='Select a Weather Variable'
+                )], style=dropdown_style),
             ], style=div_style),
 
-        # slider and text
-        html.Div([
-            html.Pre(['Adjust the slider below the map to set the temporal forecast hour.'],
-                     style=pre_style),
+            # slider and text
+            html.Div([
+                html.Pre(['Adjust the slider below the map to set the temporal forecast hour.'],
+                         style=pre_style),
 
-            html.Div([dcc.Slider(
-                step=1,
-                marks=slider_marks,
-                value=0,
-                id='hour-slider'
-            )], style=slider_style),
+                html.Div([dcc.Slider(
+                    step=1,
+                    marks=slider_marks,
+                    value=0,
+                    id='hour-slider'
+                )], style=slider_style),
             ], style=div_style),
-
-        html.Div([
-            html.Pre(['Click a data point on the map to fill in the data table below.'],
-                     style=pre_style
-                     ),
-
-            dash_table.DataTable(
-                id='data-table',
-                columns=[
-                    {
-                        'name': 'hybas_id',
-                        'id': 'hybas_id'
-                    },
-                    {
-                        'name': 'variable_value',
-                        'id': 'variable_value'
-                    }
-                ],
-                data=[],
-                row_deletable=True
-            ),
 
             html.Div([
-                html.Button("Download Data", id="btn")
-            ], style=button_style),
+                html.Pre(['Click a data point on the map to fill in the data table below.'],
+                         style=pre_style
+                         ),
+
+                dash_table.DataTable(
+                    id='data-table',
+                    columns=[
+                        {
+                            'name': 'hybas_id',
+                            'id': 'hybas_id'
+                        },
+                        {
+                            'name': 'variable_value',
+                            'id': 'variable_value'
+                        }
+                    ],
+                    data=[],
+                    row_deletable=True
+                ),
+
+                html.Div([
+                    html.Button("Download Data", id="btn")
+                ], style=button_style),
             ], style=div_style
-        ),
-            ], style=section_style),
+            ),
+        ], style=section_style),
         dcc.Download(id="download"),
         dcc.Store(id='memory'),
         html.Div([dcc.Graph(id='choropleth')],
-                 style={
-                'display': 'inline-block',
-                'vertical-align': 'top',
-                'border': '1px grey solid',
-                'width': '40%'
-
-            }
-                 )
-    ]
-    )
+                 style=graph_style)
+    ])
 
     return layout
 
@@ -378,7 +373,6 @@ def update_datatable_row(variable, hour, existing_data, df, dummy_code_hours):
         value = df.loc[
             (df['HYBAS_ID'] == hybas_id), f'{variable}_{dummy_code_hours[hour]}'].item()
         i[data_column_name] = round(value, 2)
-
 
     data_table_columns = [
         {
