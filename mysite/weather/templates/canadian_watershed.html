@@ -108,10 +108,15 @@ body {margin: 0px}
 
   </div>
 
-<div style="padding-bottom: 50% !important">
-  {% load plotly_dash %}
-  {% plotly_app name="canadian_watersheds" ratio=1 %}
-    </div>
+  <iframe src="/weather/app/canadian_watersheds/" style="
+      position: relative;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 800px;
+  <!--    display: flex; flex-direction: column; min-height: 800px-->
+      " frameborder="0" sandbox="allow-downloads allow-scripts allow-same-origin"></iframe>
+
 
 
 <footer class="footer">
