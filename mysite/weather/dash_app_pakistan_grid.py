@@ -1,6 +1,9 @@
+import ipdb
+
 from . import file_download
 # import mysite.weather.file_download as file_download
 import dash_core_components as dcc
+import datetime
 import dash_html_components as html
 from dash import dash_table
 import dash
@@ -49,6 +52,7 @@ grid_gdf = gpd.read_file(f'/Users/jpy/Documents/{country}_grid.geojson')
 joined = gpd.sjoin(gdf, grid_gdf, how='left')
 columns = list(gdf.columns) + ['id']
 joined = joined[columns]
+# ipdb.set_trace()
 
 
 print('done with data')
@@ -59,12 +63,19 @@ slider_marks, dummy_code_hours = generate_slider_marks()
 print('computing layout')
 
 # define start time
-start_time = f"{df['valid_time_0'][0]} UTC"
-if ':' not in start_time:
-    start_time = start_time.replace('UTC', '00:00 UTC')
+start_time = df['valid_time_0'][0]
+try:
+    start_time_label = datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+except:
+    start_time_date = datetime.datetime.strptime(start_time, '%Y-%m-%d')
+    start_time_label = datetime.datetime.combine(start_time_date, datetime.datetime.min.time())
+
+# start_time_label = f"{df['valid_time_0'][0]} UTC"
+# if ':' not in start_time_label:
+#     start_time_label = start_time_label.replace('UTC', '00:00 UTC')
 
 # define layout
-grid_layout = grid_layout(slider_marks, start_time)
+grid_layout = grid_layout(slider_marks, start_time_label)
 
 app.layout = grid_layout
 
@@ -86,6 +97,7 @@ def update_grid_datatable(clickdata, variable, hour, existing_data, **kwargs):
         existing_data=existing_data,
         df=joined,
         dummy_code_hours=dummy_code_hours,
+        start_time=start_time_label,
         **kwargs
     )
 
@@ -226,6 +238,7 @@ def make_choropleth(variable, hour):
 
         # [[0, 'rgba(5, 193, 240, .6)'], [1, 'rgba(250, 0, 0, .6)']])
 
+    # ipdb.set_trace()
     return fig
 
 

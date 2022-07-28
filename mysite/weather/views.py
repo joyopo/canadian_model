@@ -14,7 +14,7 @@ def index(request):
 
 
 def home(request):
-    return render(request, 'homepage.html')
+    return render(request, 'pakistan_grid.html')
 
 
 def pakistan_grid(request):

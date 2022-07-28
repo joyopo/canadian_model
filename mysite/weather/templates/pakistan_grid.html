@@ -93,7 +93,7 @@ body {margin: 0px}
         <h1>Canadian Numerical Weather Predictor Portal</h1>
   </div>
   <div class="topnav">
-  <a class="active" href="#home">Home</a>
+  <a class="active" href="#home">About</a>
   <a href="canadian_grid_dash_plot">Canada Grid</a>
   <a href="canadian_watersheds_dash_plot">Canada Watersheds</a>
   <a href="pakistan_grid_dash_plot">Pakistan Grid</a>
@@ -108,10 +108,24 @@ body {margin: 0px}
 
   </div>
 
-<div style="padding-bottom: 50% !important">
-  {% load plotly_dash %}
-  {% plotly_app name="pakistan_grid" ratio=1 %}
-    </div>
+<!--<div style="padding-bottom: 0% !important">-->
+<!--  <div style="-->
+<!--    position: relative;-->
+<!--    padding-bottom: 100%;-->
+<!--    height: 0;-->
+<!--    overflow:hidden;-->
+<!--    ">-->
+<!--  <div style=">-->
+  <iframe src="/weather/app/pakistan_grid/" style="
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 800px;
+<!--    display: flex; flex-direction: column; min-height: 800px-->
+    " frameborder="0" sandbox="allow-downloads allow-scripts allow-same-origin"></iframe>
+<!--</div>-->
+<!--    </div>-->
 
 
 <footer class="footer">

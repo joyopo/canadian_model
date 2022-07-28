@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 import ipdb
@@ -50,8 +51,6 @@ forecast_hour_variables = (
 for hr in time_steps:
     VARIABLES[hr] = forecast_hour_variables
 
-title_background = '#FFFFFF'
-container_background = '#c5ccd3'
 
 
 def generate_plot_labels():
@@ -75,16 +74,19 @@ def generate_plot_labels():
 
 
 def generate_slider_marks():
+    mark_style = {"writing-mode": "vertical-rl",
+                  "color": 'black'}
+                  # "font-weight": 'bold'}
     marks = {}
     for hour in [int(x) for x in list(VARIABLES.keys())]:
         if hour == 72:
-            marks[hour] = {"label": f'3 days', "style": {"writing-mode": "vertical-rl"}}
+            marks[hour] = {"label": f'3 days', "style": mark_style}
         elif hour == 168:
-            marks[hour] = {"label": '1 week', "style": {"writing-mode": "vertical-rl"}}
+            marks[hour] = {"label": '1 week', "style": mark_style}
         elif hour == 240:
-            marks[hour] = {"label": '10 days', "style": {"writing-mode": "vertical-rl"}}
+            marks[hour] = {"label": '10 days', "style": mark_style}
         else:
-            marks[hour] = {"label": f'{hour} hours', "style": {"writing-mode": "vertical-rl"}}
+            marks[hour] = {"label": f'{hour} hours', "style": mark_style}
 
     # create dictionary that translates dummy code integer to the actual hour
     dummy_code_hours = {}
@@ -122,12 +124,17 @@ def generate_radio_options():
 
 
 # --------------------- Dash Functions ---------------------
+title_background = '#FFFFFF'
+container_background = '#c5ccd3'
+interaction_color = '#dcf1fd'
 
 pre_style = {
     'padding': 10,
     'background-color': title_background
 }
-dropdown_style = {'marginBottom': 20}
+dropdown_style = {'marginBottom': 20,
+                  'background-color': interaction_color,
+                  'color': 'black'}
 div_style = {
     'border': '2px white solid',
     'padding': 10,
@@ -142,18 +149,19 @@ slider_style = {
     'marginBottom': 20,
     'height': 60,
     'white-space': 'nowrap',
-    'background-color': title_background
-    # 'font-size': '2px'
+    'background-color': interaction_color,
 }
 button_style = {
     # 'border': '1px grey solid',
     'padding': 10,
-    'marginBottom': 20
+    'marginBottom': 20,
+    'background-color': interaction_color
+
     # 'marginTop': 10
 }
 section_style = {
     'display': 'inline-block',
-    'height': '500',
+    # 'height': '500',
     'vertical-align': 'middle',
     'width': '50%'
 
@@ -171,7 +179,7 @@ graph_style = {
 
 def grid_layout(slider_marks, forecast_start_time):
     layout = html.Div([
-        html.H3(children=f'Forecast hours start from the latest data refresh at: {forecast_start_time}',
+        html.H3(children=f'Forecast hours start from the latest data refresh at: {forecast_start_time} UTC',
                 id='forecast_start'),
 
         html.Div([
@@ -188,8 +196,8 @@ def grid_layout(slider_marks, forecast_start_time):
                     ],
                     value='t2m',
                     id='weather-dropdown',
-                    placeholder='Select a Weather Variable'
-                )], style=dropdown_style),
+                    placeholder='Select a Weather Variable',
+                    style=dropdown_style)]),
             ], style=div_style),
 
             # slider and text
@@ -237,7 +245,9 @@ def grid_layout(slider_marks, forecast_start_time):
                     }],
                     data=[],
                     row_deletable=True,
-                    style_cell={'fontSize': 10},
+                    style_cell={'fontSize': 10,
+                                'background-color': interaction_color
+                                },
                     style_header={'fontWeight': 'bold'}
 
                 ),
@@ -388,14 +398,14 @@ def update_datatable_row(variable, hour, existing_data, df, dummy_code_hours):
     return data_table_columns, existing_data
 
 
-def append_datatable_row_grid(variable, hour, clickdata, existing_data, df, dummy_code_hours):
+def append_datatable_row_grid(variable, hour, clickdata, existing_data, df, dummy_code_hours, start_time):
     location = clickdata['points'][0]['location']
     latitude = clickdata['points'][0]['customdata'][0]
     longitude = clickdata['points'][0]['customdata'][1]
     value = df.loc[(df.id == location), f'{variable}_{dummy_code_hours[hour]}'].item()
     # 'id' is the row id
 
-    data_column_name = f'{dummy_code_hours[hour]} hr Forecast | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
+    data_column_name = f'{start_time + datetime.timedelta(hours=dummy_code_hours[hour])} | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
 
     data_table_columns = [{
         'name': 'latitude',
@@ -423,8 +433,8 @@ def append_datatable_row_grid(variable, hour, clickdata, existing_data, df, dumm
     return data_table_columns, existing_data
 
 
-def update_datatable_row_grid(variable, hour, existing_data, df, dummy_code_hours):
-    data_column_name = f'{dummy_code_hours[hour]} hr Forecast | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
+def update_datatable_row_grid(variable, hour, existing_data, df, dummy_code_hours, start_time):
+    data_column_name = f'{start_time + datetime.timedelta(hours=dummy_code_hours[hour])} | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
 
     for i in existing_data:
         location = i['location_id']
@@ -593,7 +603,7 @@ def filter_and_download_watershed(data, variable, df, hour):
     return download_df
 
 
-def update_datatable_grid(clickdata, variable, hour, existing_data, df, dummy_code_hours, **kwargs):
+def update_datatable_grid(clickdata, variable, hour, existing_data, df, dummy_code_hours, start_time, **kwargs):
     logging.info(f'kwargs are {kwargs}')
     logging.info(f'callback context: {kwargs["callback_context"]}')
     logging.info(f'callback context attributes: {dir(kwargs["callback_context"])}')
@@ -612,7 +622,8 @@ def update_datatable_grid(clickdata, variable, hour, existing_data, df, dummy_co
                 clickdata=clickdata,
                 existing_data=existing_data,
                 df=df,
-                dummy_code_hours=dummy_code_hours
+                dummy_code_hours=dummy_code_hours,
+                start_time=start_time
             )
 
         if triggered_id in ['weather-dropdown.value', 'hour-slider.value']:
@@ -622,7 +633,8 @@ def update_datatable_grid(clickdata, variable, hour, existing_data, df, dummy_co
                     hour=hour,
                     existing_data=existing_data,
                     df=df,
-                    dummy_code_hours=dummy_code_hours
+                    dummy_code_hours=dummy_code_hours,
+                    start_time=start_time
                 )
             else:
                 pass
