@@ -153,6 +153,7 @@ def make_choropleth(variable, hour):
         center={'lat': 60, 'lon': -100},
         height=800,
         # width=1000,
+        title='Canada Watersheds',
         labels=labels,
         hover_data=['HYBAS_ID', f'{variable}_{dummy_code_hours[hour]}'],
         # title='Weather variables aggregated over level 6 Pfafstetter watershed boundaries'

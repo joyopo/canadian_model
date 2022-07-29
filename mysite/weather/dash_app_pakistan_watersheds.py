@@ -181,6 +181,7 @@ def make_choropleth(variable, hour):
         center={'lat': 30, 'lon': 68},
         height=500,
         # width=1000,
+        title='Pakistan Watersheds',
         labels=labels,
         hover_data=['HYBAS_ID', f'{variable}_{dummy_code_hours[hour]}'],
         # title='Weather variables aggregated over level 7 Pfafstetter watershed boundaries'

@@ -181,7 +181,7 @@ def make_choropleth(variable, hour):
         # width=1000,
         labels=labels,  # .update({'ADM2_PCODE_': 'Administrative Boundary Code'}),
         hover_data=['longitude', 'latitude', f'{variable}_{dummy_code_hours[hour]}'],
-        # title='Weather Variables Visualized Over 0.15 Degree Resolution',
+        title='Pakistan Grid',
         custom_data=['latitude', 'longitude', f'{variable}_{dummy_code_hours[hour]}']
     )
 

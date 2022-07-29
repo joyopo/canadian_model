@@ -168,7 +168,7 @@ def make_choropleth(variable, hour):
         # width=1000,
         labels=labels,
         hover_data=['longitude', 'latitude', f'{variable}_{dummy_code_hours[hour]}'],
-        # title='Weather Variables Visualized Over 0.15 Degree Resolution'
+        title='Canada Grid',
         custom_data=['latitude', 'longitude', f'{variable}_{dummy_code_hours[hour]}']
 
     )
