@@ -1,3 +1,5 @@
+import datetime
+
 from dash import dcc, callback_context
 from dash.dependencies import Input, Output, State
 import pandas as pd
@@ -9,7 +11,7 @@ import logging
 
 
 from .common import generate_plot_labels, generate_slider_marks, watershed_layouts, \
-    filter_and_download_watershed, append_datatable_row, update_datatable_row, VARIABLE_ABRV
+    filter_and_download_watershed, append_datatable_row_watershed, update_datatable_row_watershed, VARIABLE_ABRV
 #
 # from mysite.weather.common import generate_plot_labels, generate_slider_marks, watershed_layouts, \
 #     filter_and_download_watershed, append_datatable_row, update_datatable_row, VARIABLE_ABRV
@@ -43,12 +45,20 @@ labels = generate_plot_labels()
 slider_marks, dummy_code_hours = generate_slider_marks()
 
 # forecast start time
-start_time = f"{watershed_data_grouped['valid_time_0'][0]} UTC"
-if ':' not in start_time:
-    start_time = start_time.replace('UTC', '00:00 UTC')
+start_time = watershed_data_grouped['valid_time_0'][0]
+try:
+    start_time_label = datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+except:
+    start_time_date = datetime.datetime.strptime(start_time, '%Y-%m-%d')
+    start_time_label = datetime.datetime.combine(start_time_date, datetime.datetime.min.time())
+
+
+# start_time = f"{watershed_data_grouped['valid_time_0'][0]} UTC"
+# if ':' not in start_time:
+#     start_time = start_time.replace('UTC', '00:00 UTC')
 
 # define app layout
-layout = watershed_layouts(slider_marks, start_time)
+layout = watershed_layouts(slider_marks, start_time_label)
 
 print("computing layout")
 app.layout = layout
@@ -93,23 +103,25 @@ def update_datatable(clickdata, variable, hour, existing_data, **kwargs):
             json_string = json.dumps(clickdata)
             clickdata = json.loads(json_string)
 
-            data_table_columns, existing_data = append_datatable_row(
+            data_table_columns, existing_data = append_datatable_row_watershed(
                 variable=variable,
                 hour=hour,
                 clickdata=clickdata,
                 existing_data=existing_data,
                 df=watershed_data_grouped,
-                dummy_code_hours=dummy_code_hours
+                dummy_code_hours=dummy_code_hours,
+                start_time=start_time_label
             )
 
         if triggered_id in ['weather-dropdown.value', 'hour-slider.value']:
             if len(existing_data) > 0:
-                data_table_columns, existing_data = update_datatable_row(
+                data_table_columns, existing_data = update_datatable_row_watershed(
                     variable=variable,
                     hour=hour,
                     existing_data=existing_data,
                     df=watershed_data_grouped,
-                    dummy_code_hours=dummy_code_hours
+                    dummy_code_hours=dummy_code_hours,
+                    start_time=start_time_label
                 )
             else:
                 pass
@@ -119,6 +131,7 @@ def update_datatable(clickdata, variable, hour, existing_data, **kwargs):
         pass
 
     return data_table_columns, existing_data
+
 
 @app.callback(
     Output('download', 'data'),
@@ -133,7 +146,8 @@ def filter_and_download(n_clicks, data, variable, hour):
             data=data,
             variable=variable,
             df=watershed_data_grouped,
-            hour=hour
+            hour=hour,
+            start_time=start_time_label
         )
 
 

@@ -347,12 +347,12 @@ def watershed_layouts(slider_marks, forecast_start_time):
     return layout
 
 
-def append_datatable_row(variable, hour, clickdata, existing_data, df, dummy_code_hours):
+def append_datatable_row_watershed(variable, hour, clickdata, existing_data, df, dummy_code_hours, start_time):
     hybas_id = clickdata['points'][0]['location']
     value = df.loc[(df['HYBAS_ID'] == hybas_id), f'{variable}_{dummy_code_hours[hour]}'].item()
     # 'id' is the row id
 
-    data_column_name = f'{dummy_code_hours[hour]} hr Forecast | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
+    data_column_name = f'{start_time + datetime.timedelta(hours=dummy_code_hours[hour])} | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
 
     data_table_columns = [
         {
@@ -375,8 +375,8 @@ def append_datatable_row(variable, hour, clickdata, existing_data, df, dummy_cod
     return data_table_columns, existing_data
 
 
-def update_datatable_row(variable, hour, existing_data, df, dummy_code_hours):
-    data_column_name = f'{dummy_code_hours[hour]} hr Forecast | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
+def update_datatable_row_watershed(variable, hour, existing_data, df, dummy_code_hours, start_time):
+    data_column_name = f'{start_time + datetime.timedelta(hours=dummy_code_hours[hour])} | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
 
     for i in existing_data:
         hybas_id = i['hybas_id']
@@ -492,7 +492,7 @@ def display_click_grid_data_in_datatable(variable, hour, clickdata, df, dummy_co
     return data_table_columns, data
 
 
-def filter_and_download_grid(data, variable, df):
+def filter_and_download_grid(data, variable, df, start_time):
     """
 
     :param data: data parameter of the datatable
@@ -549,6 +549,7 @@ def filter_and_download_grid(data, variable, df):
     download_df.columns = download_df.columns.str.replace(f'{variable}_', '')
     download_df['weather_variable'] = VARIABLE_ABRV[variable]['name']
     download_df['units'] = VARIABLE_ABRV[variable]['units']
+    download_df['forecast_start_time'] = start_time
     download_df.reset_index(inplace=True, drop=True)
     columns = list(download_df.columns.values)
     columns = columns[-2:] + columns[:-2]
@@ -557,7 +558,7 @@ def filter_and_download_grid(data, variable, df):
     return download_df
 
 
-def filter_and_download_watershed(data, variable, df, hour):
+def filter_and_download_watershed(data, variable, df, hour, start_time):
     hybas_ids = []
     for i in data:
         hybas_ids.append(i['hybas_id'])
@@ -588,6 +589,9 @@ def filter_and_download_watershed(data, variable, df, hour):
     # add clear name and units columns
     download_df['weather_variable'] = VARIABLE_ABRV[variable]['name']
     download_df['units'] = VARIABLE_ABRV[variable]['units']
+
+    # add detailed start times
+    download_df['forecast_start_time'] = start_time
 
     download_df.reset_index(inplace=True, drop=True)
 

@@ -134,7 +134,8 @@ def filter_and_download(n_clicks, data, variable):
         download_df = filter_and_download_grid(
             data=data,
             variable=variable,
-            df=joined
+            df=joined,
+            start_time=start_time_label
         )
 
     # columns_to_transpose = []

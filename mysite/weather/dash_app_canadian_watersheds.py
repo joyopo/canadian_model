@@ -1,12 +1,13 @@
 from dash import dash_table, callback_context, dcc, html
 from dash.dependencies import Input, Output, State
 import pandas as pd
+import datetime
 import json
 from django_plotly_dash import DjangoDash
 import plotly.express as px
 
 from .common import generate_plot_labels, generate_slider_marks, grid_layout, watershed_layouts, \
-    filter_and_download_watershed, update_datatable_row, append_datatable_row
+    filter_and_download_watershed, update_datatable_row_watershed, append_datatable_row_watershed
 
 # from mysite.weather.common import generate_plot_labels, generate_slider_marks, grid_layout, watershed_layouts, \
 #     filter_and_download_watershed, update_datatable_row, append_datatable_row
@@ -42,9 +43,17 @@ labels = generate_plot_labels()
 slider_marks, dummy_code_hours = generate_slider_marks()
 
 # define start time
-start_time = f"{watershed_data_grouped['valid_time_0'][0]} UTC"
-if ':' not in start_time:
-    start_time = start_time.replace('UTC', '00:00 UTC')
+start_time = watershed_data_grouped['valid_time_0'][0]
+try:
+    start_time_label = datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+except:
+    start_time_date = datetime.datetime.strptime(start_time, '%Y-%m-%d')
+    start_time_label = datetime.datetime.combine(start_time_date, datetime.datetime.min.time())
+
+
+# start_time = f"{watershed_data_grouped['valid_time_0'][0]} UTC"
+# if ':' not in start_time:
+#     start_time = start_time.replace('UTC', '00:00 UTC')
 
 
 layout = watershed_layouts(slider_marks, start_time)
@@ -70,23 +79,25 @@ def update_datatable(clickdata, variable, hour, existing_data, **kwargs):
         json_string = json.dumps(clickdata)
         clickdata = json.loads(json_string)
 
-        data_table_columns, existing_data = append_datatable_row(
+        data_table_columns, existing_data = append_datatable_row_watershed(
             variable=variable,
             hour=hour,
             clickdata=clickdata,
             existing_data=existing_data,
             df=watershed_data_grouped,
-            dummy_code_hours=dummy_code_hours
+            dummy_code_hours=dummy_code_hours,
+            start_time=start_time_label
         )
 
     if kwargs['callback_context'].triggered[0]['prop_id'] in ['weather-dropdown.value', 'hour-slider.value']:
         if len(existing_data) > 0:
-            data_table_columns, existing_data = update_datatable_row(
+            data_table_columns, existing_data = update_datatable_row_watershed(
                 variable=variable,
                 hour=hour,
                 existing_data=existing_data,
                 df=watershed_data_grouped,
-                dummy_code_hours=dummy_code_hours
+                dummy_code_hours=dummy_code_hours,
+                start_time=start_time_label
             )
         else:
             pass
@@ -101,13 +112,16 @@ def update_datatable(clickdata, variable, hour, existing_data, **kwargs):
     Input('btn', 'n_clicks'),
     State('data-table', 'data'),
     State('weather-dropdown', 'value'),
+    State('hour-slider', 'value')
 )
-def filter_and_download(n_clicks, data, variable):
+def filter_and_download(n_clicks, data, variable, hour):
     if n_clicks is not None:
         download_df = filter_and_download_watershed(
             data=data,
             variable=variable,
-            df=watershed_data_grouped
+            df=watershed_data_grouped,
+            hour=hour,
+            start_time=start_time_label
         )
 
         # columns_to_transpose = []

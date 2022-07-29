@@ -19,8 +19,7 @@ import pyproj
 
 from django_plotly_dash import DjangoDash
 import plotly.express as px
-from datetime import datetime
-
+import datetime
 
 token = 'pk.eyJ1Ijoiam9lLXAteW91bmc5NiIsImEiOiJja3p4aGs3YjUwMWo3MnVuNmw2eDQxaTUzIn0.zeqhZg0rX0uY7C0oVktNjA'
 px.set_mapbox_access_token(token)
@@ -87,13 +86,21 @@ labels = generate_plot_labels()
 slider_marks, dummy_code_hours = generate_slider_marks()
 
 # define start time
-start_time = f"{df['valid_time_0'][0]} UTC"
-if ':' not in start_time:
-    start_time = start_time.replace('UTC', '00:00 UTC')
+start_time = df['valid_time_0'][0]
+try:
+    start_time_label = datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
+except:
+    start_time_date = datetime.datetime.strptime(start_time, '%Y-%m-%d')
+    start_time_label = datetime.datetime.combine(start_time_date, datetime.datetime.min.time())
+
+
+# start_time = f"{df['valid_time_0'][0]} UTC"
+# if ':' not in start_time:
+#     start_time = start_time.replace('UTC', '00:00 UTC')
 
 
 print("computing layout")
-grid_layout = grid_layout(slider_marks, start_time)
+grid_layout = grid_layout(slider_marks, start_time_label)
 
 app.layout = grid_layout
 
@@ -115,6 +122,7 @@ def update_grid_datatable(clickdata, variable, hour, existing_data, **kwargs):
             existing_data=existing_data,
             df=joined,
             dummy_code_hours=dummy_code_hours,
+            start_time=start_time_label,
             **kwargs
         )
 
@@ -132,7 +140,8 @@ def filter_and_download(n_clicks, data, variable):
         download_df = filter_and_download_grid(
             data=data,
             variable=variable,
-            df=joined
+            df=joined,
+            start_time=start_time_label
         )
 
     return dcc.send_data_frame(download_df.to_csv, f'{country}_weather_portal.csv')
