@@ -130,7 +130,9 @@ interaction_color = '#dcf1fd'
 
 pre_style = {
     'padding': 10,
-    'background-color': title_background
+    'background-color': title_background,
+    'font-size': 10
+
 }
 dropdown_style = {'marginBottom': 20,
                   'background-color': interaction_color,
@@ -140,7 +142,8 @@ div_style = {
     'padding': 10,
     'background-color': container_background,
     'margin-bottom': 10,
-    'margin-top': 10
+    'margin-top': 10,
+    # 'font-size': 8
 
 }
 slider_style = {
@@ -163,7 +166,7 @@ section_style = {
     'display': 'inline-block',
     # 'height': '500',
     'vertical-align': 'middle',
-    'width': '50%'
+    'width': '35%'
 
     # 'margin': 'auto',
     # 'width': '50%'
@@ -172,7 +175,7 @@ graph_style = {
     'display': 'inline-block',
     'vertical-align': 'top',
     'border': '1px grey solid',
-    'width': '40%',
+    'width': '60%',
     'margin-top': 10
 }
 
@@ -185,7 +188,7 @@ def grid_layout(slider_marks, forecast_start_time):
         html.Div([
             # dropdown and text
             html.Div([
-                html.Pre(['Choose a weather variable from the dropdown below to overlay on the map.'],
+                html.Pre(['Choose a weather variable from the dropdown below.'],
                          style=pre_style),
                 html.Div([dcc.Dropdown(
                     options=[
@@ -223,40 +226,7 @@ def grid_layout(slider_marks, forecast_start_time):
             # html.Pre(id='click-data'),
 
             # datatable and text and button
-            html.Div([
-                html.Pre(['Click a data point on the map to fill in the data table below.'],
-                         style=pre_style
-                         ),
 
-                dash_table.DataTable(
-                    id='data-table',
-                    columns=[{
-                        'name': 'latitude',
-                        'id': 'latitude'
-                    }, {
-                        'name': 'longitude',
-                        'id': 'longitude'
-                    }, {
-                        'name': 'location_id',
-                        'id': 'location_id'
-                    }, {
-                        'name': 'variable_value',
-                        'id': 'variable_value'
-                    }],
-                    data=[],
-                    row_deletable=True,
-                    style_cell={'fontSize': 10,
-                                'background-color': interaction_color
-                                },
-                    style_header={'fontWeight': 'bold'}
-
-                ),
-
-                html.Div([
-                    html.Button("Download Data", id="btn")
-                ], style=button_style),
-            ], style=div_style
-            ),
         ], style=section_style),
         dcc.Download(id="download"),
         dcc.Store(id='memory'),
@@ -264,7 +234,42 @@ def grid_layout(slider_marks, forecast_start_time):
         html.Div(
             [
                 dcc.Graph(id='choropleth')
-            ], style=graph_style)
+            ], style=graph_style),
+
+        html.Div([
+            html.Pre(['Click a data point on the map to fill in the data table below.'],
+                     style=pre_style
+                     ),
+
+            dash_table.DataTable(
+                id='data-table',
+                columns=[{
+                    'name': 'latitude',
+                    'id': 'latitude'
+                }, {
+                    'name': 'longitude',
+                    'id': 'longitude'
+                }, {
+                    'name': 'location_id',
+                    'id': 'location_id'
+                }, {
+                    'name': 'variable_value',
+                    'id': 'variable_value'
+                }],
+                data=[],
+                row_deletable=True,
+                style_cell={'fontSize': 10,
+                            'background-color': interaction_color
+                            },
+                style_header={'fontWeight': 'bold'}
+
+            ),
+
+            html.Div([
+                html.Button("Download Data", id="btn")
+            ], style=button_style),
+        ], style=div_style
+        ),
 
     ], style={
         'margin': 'auto',
@@ -282,7 +287,7 @@ def watershed_layouts(slider_marks, forecast_start_time):
         html.Div([
             # dropdown and text
             html.Div([
-                html.Pre(['Choose a weather variable from the dropdown below to overlay on the map.'],
+                html.Pre(['Choose a weather variable from the dropdown below.'],
                          style=pre_style),
 
                 html.Div([dcc.Dropdown(
@@ -310,38 +315,37 @@ def watershed_layouts(slider_marks, forecast_start_time):
                     id='hour-slider'
                 )], style=slider_style),
             ], style=div_style),
-
-            html.Div([
-                html.Pre(['Click a data point on the map to fill in the data table below.'],
-                         style=pre_style
-                         ),
-
-                dash_table.DataTable(
-                    id='data-table',
-                    columns=[
-                        {
-                            'name': 'hybas_id',
-                            'id': 'hybas_id'
-                        },
-                        {
-                            'name': 'variable_value',
-                            'id': 'variable_value'
-                        }
-                    ],
-                    data=[],
-                    row_deletable=True
-                ),
-
-                html.Div([
-                    html.Button("Download Data", id="btn")
-                ], style=button_style),
-            ], style=div_style
-            ),
         ], style=section_style),
         dcc.Download(id="download"),
         dcc.Store(id='memory'),
         html.Div([dcc.Graph(id='choropleth')],
-                 style=graph_style)
+                 style=graph_style),
+        html.Div([
+            html.Pre(['Click a data point on the map to fill in the data table below.'],
+                     style=pre_style
+                     ),
+
+            dash_table.DataTable(
+                id='data-table',
+                columns=[
+                    {
+                        'name': 'hybas_id',
+                        'id': 'hybas_id'
+                    },
+                    {
+                        'name': 'variable_value',
+                        'id': 'variable_value'
+                    }
+                ],
+                data=[],
+                row_deletable=True
+            ),
+
+            html.Div([
+                html.Button("Download Data", id="btn")
+            ], style=button_style),
+        ], style=div_style
+        ),
     ])
 
     return layout
@@ -352,7 +356,7 @@ def append_datatable_row_watershed(variable, hour, clickdata, existing_data, df,
     value = df.loc[(df['HYBAS_ID'] == hybas_id), f'{variable}_{dummy_code_hours[hour]}'].item()
     # 'id' is the row id
 
-    data_column_name = f'{start_time + datetime.timedelta(hours=dummy_code_hours[hour])} | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
+    data_column_name = f'{start_time + datetime.timedelta(hours=dummy_code_hours[hour])} {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
 
     data_table_columns = [
         {
@@ -376,7 +380,7 @@ def append_datatable_row_watershed(variable, hour, clickdata, existing_data, df,
 
 
 def update_datatable_row_watershed(variable, hour, existing_data, df, dummy_code_hours, start_time):
-    data_column_name = f'{start_time + datetime.timedelta(hours=dummy_code_hours[hour])} | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
+    data_column_name = f'{start_time + datetime.timedelta(hours=dummy_code_hours[hour])} {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
 
     for i in existing_data:
         hybas_id = i['hybas_id']
@@ -405,7 +409,7 @@ def append_datatable_row_grid(variable, hour, clickdata, existing_data, df, dumm
     value = df.loc[(df.id == location), f'{variable}_{dummy_code_hours[hour]}'].item()
     # 'id' is the row id
 
-    data_column_name = f'{start_time + datetime.timedelta(hours=dummy_code_hours[hour])} | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
+    data_column_name = f'{start_time + datetime.timedelta(hours=dummy_code_hours[hour])} {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
 
     data_table_columns = [{
         'name': 'latitude',
@@ -434,7 +438,7 @@ def append_datatable_row_grid(variable, hour, clickdata, existing_data, df, dumm
 
 
 def update_datatable_row_grid(variable, hour, existing_data, df, dummy_code_hours, start_time):
-    data_column_name = f'{start_time + datetime.timedelta(hours=dummy_code_hours[hour])} | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
+    data_column_name = f'{start_time + datetime.timedelta(hours=dummy_code_hours[hour])} {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
 
     for i in existing_data:
         location = i['location_id']

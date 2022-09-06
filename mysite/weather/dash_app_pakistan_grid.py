@@ -16,7 +16,7 @@ import plotly.express as px
 # from dash_app_code import token
 from django_plotly_dash import DjangoDash
 from .common import generate_plot_labels, generate_slider_marks, generate_radio_options, \
-    display_click_grid_data_in_datatable, filter_and_download_grid, grid_layout, update_datatable_grid
+    filter_and_download_grid, grid_layout, update_datatable_grid
 
 # from mysite.weather.common import generate_plot_labels, generate_slider_marks, generate_radio_options, \
 #     display_click_grid_data_in_datatable, filter_and_download_grid, grid_layout, update_datatable_grid
