@@ -26,8 +26,6 @@ app = DjangoDash('canadian_watersheds')
 country = 'canada'
 
 print("reading geojson")
-# with open('/Users/jpy/Documents/drainage_boundaries_simplifiedpoint2.geojson') as f:
-#     drainage_gjson = json.load(f)
 
 with open('/Users/jpy/Documents/weather_portal/mapshaper_simplified/canadian_watersheds.geojson') as f:
     watersheds = json.load(f)
@@ -49,11 +47,6 @@ try:
 except:
     start_time_date = datetime.datetime.strptime(start_time, '%Y-%m-%d')
     start_time_label = datetime.datetime.combine(start_time_date, datetime.datetime.min.time())
-
-
-# start_time = f"{watershed_data_grouped['valid_time_0'][0]} UTC"
-# if ':' not in start_time:
-#     start_time = start_time.replace('UTC', '00:00 UTC')
 
 
 layout = watershed_layouts(slider_marks, start_time)
@@ -124,14 +117,6 @@ def filter_and_download(n_clicks, data, variable, hour):
             start_time=start_time_label
         )
 
-        # columns_to_transpose = []
-        # for col in download_df_f:
-        #     if col.startswith('t2m'):
-        #         columns_to_transpose.append(col)
-        # df_to_transpose = download_df_f[columns_to_transpose]
-        # download_df_f = download_df_f.drop(columns_to_transpose)
-
-        # return download_df.to_dict()
         return dcc.send_data_frame(download_df.to_csv, f'{country}_watersheds_weather_portal.csv')
 
 
@@ -152,11 +137,9 @@ def make_choropleth(variable, hour):
         zoom=2,
         center={'lat': 60, 'lon': -100},
         height=800,
-        # width=1000,
         title='Canada Watersheds',
         labels=labels,
         hover_data=['HYBAS_ID', f'{variable}_{dummy_code_hours[hour]}'],
-        # title='Weather variables aggregated over level 6 Pfafstetter watershed boundaries'
 
     )
 
@@ -183,18 +166,8 @@ def make_choropleth(variable, hour):
 
     return fig
 
-#     make_plot(
-#     df=gdf_merged,
-#     geojson=gdf_merged.geometry,
-#     # featureidkey=gdf["CSDUID"],
-#     # f"properties.{geographic_division_ids['census_subdivision']}",
-#     locations=gdf_merged.index,
-# )
-print("finished building plot")
 
-# fig.update_layout(
-#     margin={"r": 0, "t": 0, "l": 0, "b": 0},
-#     mapbox_accesstoken=token)
+print("finished building plot")
 
 
 if __name__ == '__main__':

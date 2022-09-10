@@ -162,8 +162,6 @@ def get_file_list(forecast_hour, current_day_utc, model_run_start: str):
     for i in VARIABLES[forecast_hour]:
         variable = i[0]
         variable_folder = i[1]
-        # TODO: filename is either 00 or 12 UTC runtime depending on the current time
-        # TODO: currently defaults to 00
         filename = f"CMC_glb_{variable}_latlon.15x.15_{current_day_utc}{model_run_start}_P{forecast_hour}.grib2"
         # create list of lists
         file_list.append(
@@ -180,7 +178,6 @@ def get_file_list(forecast_hour, current_day_utc, model_run_start: str):
 
 
 def fetch_grib2(file_list, country: str = 'canada'):
-    # TODO: make filepath generic, ie use parent of current directory
 
     countries = list(BOUNDS.keys())
     if country not in countries:
@@ -297,7 +294,6 @@ def combine_dfs(df_list):
     for i in range(1, len(df_list)):
         df_list[i][0] = df_list[i][0].drop(f'valid_time_{hour}', axis=1)
 
-    #
     df_list = [df_list[i][0] for i in range(len(df_list))]
 
     df_combined = pd.concat(df_list, axis=1)
@@ -318,12 +314,8 @@ def combine_forecast_hours(country: str):
         val.set_index(['latitude', 'longitude'], inplace=True)
         df_list.append(val)
 
-    # for i in range(1, len(df_list)):
-    #     df_list[i] = df_list[i].drop('valid_time', axis=1)
-
     df_combined = pd.concat(df_list, axis=1)
     df_combined.reset_index(inplace=True)
-    # df_combined = df_combined.rename({})
 
     return df_combined
 
@@ -338,7 +330,6 @@ def full_download(forecast_hour: str, country: str, current_day_utc, model_run_s
     filepaths, country = fetch_grib2(
         file_list=file_list,
         country=country,
-        # forecast_hour=forecast_hour
     )
 
     df_list = grib_to_df(
@@ -366,45 +357,8 @@ def bound_to_country(df, country):
         joined_gdf = gpd.sjoin(polygons, gdf, how='left')
         joined_gdf = joined_gdf[df.columns]
         joined_gdf = joined_gdf.drop('geometry', axis=1)
-    # else:
 
     return joined_gdf
-
-
-
-# def aggregate_to_polygons(df, polygon_path):
-#     drainage_gdf = gpd.read_file('/Users/jpy/Documents/drainage_boundaries.zip')
-#     # # set crs of census gdf
-#     drainage_gdf = drainage_gdf.to_crs(pyproj.CRS.from_epsg(4326))
-#     watershed_gdf = gpd.read_file('/Users/jpy/Documents/NHN_INDEX_WORKUNIT_LIMIT_2')
-#     watershed_gdf = watershed_gdf.to_crs(pyproj.CRS.from_epsg(4326))
-#     # assert watersheds_gdf.crs.name == 'WGS 84', f"gdf has crs {watersheds_gdf.crs.name}"
-#     # if watersheds_gdf.crs.name == 'WGS 84':
-#     #     print(f"gdf has crs {watersheds_gdf.crs.name}")
-#
-#     data_df = pd.read_csv(f'{PROJECT_ROOT_PATH}/canadian_model/saved_data/canada/2022-02-23_17-17-24.csv')
-#     data_gdf = df_to_gdf(data_df)
-#     print("grouping drainage basin data")
-#     drainage_basin_data_grouped = spatial_join_and_group(data=data_gdf, polygons=drainage_gdf, column_aggregate='DR_Code')
-#     print("finished grouping drainage basin data")
-#
-#     print("grouping watershed data")
-#     watershed_data_grouped = spatial_join_and_group(data=data_gdf, polygons=watershed_gdf, column_aggregate='DATASETNAM')
-#     print("finished watershed basin data")
-#
-#     print("saving drainage basin data")
-#     drainage_basin_data_grouped.to_csv(f'{PROJECT_ROOT_PATH}/canadian_model/saved_data/canada/aggregated/drainage_basins/{datetime.utcnow().strftime("%Y%m%d")}.csv')
-#     print('done')
-
-
-# def create_image():
-#     resolution = 15
-#     height = resolution * 671
-#     width = resolution * 1771
-#     image = Image.new('RGBA', (width, height))
-#     pixels = image.load()
-#
-#     data = pd.read_csv(f'{PROJECT_ROOT_PATH}/canadian_model/saved_data/pakistan/2022-02-23_17-21-25.csv')
 
 
 def run_aggregations(current_day, model_run_start):
@@ -431,7 +385,6 @@ def run_aggregations(current_day, model_run_start):
                 polygons=watershed_gdf,
                 column_aggregate='HYBAS_ID'
             )
-            # watershed_gdf.drop('index_right', inplace=True, axis=1)
         else:
             raise Exception
         logging.info('finished spatial join')
@@ -446,8 +399,6 @@ def main():
         model_run_start = '12'
     elif datetime.utcnow().time() > datetime.strptime('3:00', '%H:%M').time():
         model_run_start = '00'
-        # current_time_utc = datetime.utcnow() - timedelta(days=1)
-        # current_day_utc = current_time_utc.strftime('%Y-%m-%d')
     else:
         current_time_utc = datetime.utcnow() - timedelta(days=1)
         current_day_utc = current_time_utc.strftime('%Y%m%d')
@@ -464,7 +415,6 @@ def main():
                     current_day_utc=current_day_utc,
                     model_run_start=model_run_start
                 )
-                # df.to_csv(f'{PROJECT_ROOT_PATH}/canadian_model/archive/{country}/{current_day_utc}{model_run_start}"_P"{hour}.csv')
                 df.to_csv(f'{PROJECT_ROOT_PATH}/canadian_model/mysite/live_data/{country}/{hour}/{hour + "_" + country}.csv')
 
             except:
@@ -479,23 +429,14 @@ def main():
                     current_day_utc=current_day_utc,
                     model_run_start=model_run_start
                 )
-                # df.to_csv(f'{PROJECT_ROOT_PATH}/canadian_model/archive/{country}/{current_day_utc}{model_run_start}"_P"{hour}.csv')
                 df.to_csv(f'{PROJECT_ROOT_PATH}/canadian_model/mysite/live_data/{country}/{hour}/{hour + "_" + country}.csv')
 
         df_combined_forecast = combine_forecast_hours(country)
         df_combined_forecast = bound_to_country(df_combined_forecast, country)
-        # current_day_utc = current_time_utc.strftime('%Y-%m-%d')
         df_combined_forecast.to_csv(
             f'{PROJECT_ROOT_PATH}/canadian_model/archive/{country}/csv/{current_day_utc}{model_run_start}_P{hour}.csv')
         df_combined_forecast.to_csv(f'{PROJECT_ROOT_PATH}/canadian_model/mysite/live_data/{country}/{country}.csv')
         logging.info('writing netcdf')
-        # netcdf process commented during expansion of time steps
-
-        # netcdf.main(
-        #     path=f'{PROJECT_ROOT_PATH}/canadian_model/archive/{country}/netcdf/{current_day_utc}{model_run_start}_P{hour}.nc',
-        #     country=country,
-        #     project_root_path=PROJECT_ROOT_PATH
-        # )
 
     logging.info('running aggregations')
     run_aggregations(current_day_utc, model_run_start)
@@ -504,32 +445,8 @@ def main():
 
 
 if __name__ == '__main__':
-    # TODO: when to use run start 00 or 12
     start = time.time()
     main()
     end = time.time()
     elapsed_time = end - start
     logging.info(f'elapsed time: {elapsed_time}')
-    # model_run_start = '00'
-    # forecast_hours = list(VARIABLES.keys())
-    # for country in COUNTRIES:
-    #     for hour in forecast_hours:
-    #         current_time_utc = datetime.utcnow() # - timedelta(days=1)
-    #         current_day_utc = current_time_utc.strftime('%Y%m%d')
-    #         df = full_download(
-    #             forecast_hour=hour,
-    #             country=country,
-    #             current_day_utc=current_day_utc,
-    #             model_run_start=model_run_start
-    #         )
-    #         current_time_utc = datetime.utcnow() # - timedelta(days=1)
-    #         current_day_utc = current_time_utc.strftime('%Y-%m-%d_%H%M%S')
-    #         # df.to_csv(f'{PROJECT_ROOT_PATH}/canadian_model/archive/{country}/{current_day_utc}{model_run_start}"_P"{hour}.csv')
-    #         df.to_csv(f'{PROJECT_ROOT_PATH}/canadian_model/live_data/{country}/{hour}/{hour+"_"+country}.csv')
-    #
-    #     df_combined_forecast = combine_forecast_hours(country)
-    #     df_combined_forecast = bound_to_country(df_combined_forecast, country)
-    #     df_combined_forecast.to_csv(f'{PROJECT_ROOT_PATH}/canadian_model/archive/{country}/{current_day_utc}{model_run_start}"_P"{hour}.csv')
-    #     df_combined_forecast.to_csv(f'{PROJECT_ROOT_PATH}/canadian_model/live_data/{country}/{country}.csv')
-    #
-    # print('done')

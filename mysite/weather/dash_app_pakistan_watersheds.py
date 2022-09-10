@@ -1,15 +1,11 @@
 import datetime
-
 from dash import dcc, callback_context
 from dash.dependencies import Input, Output, State
 import pandas as pd
-import dash
 import json
 from django_plotly_dash import DjangoDash
 import plotly.express as px
 import logging
-
-
 from .common import generate_plot_labels, generate_slider_marks, watershed_layouts, \
     filter_and_download_watershed, append_datatable_row_watershed, update_datatable_row_watershed, VARIABLE_ABRV
 #
@@ -53,10 +49,6 @@ except:
     start_time_label = datetime.datetime.combine(start_time_date, datetime.datetime.min.time())
 
 
-# start_time = f"{watershed_data_grouped['valid_time_0'][0]} UTC"
-# if ':' not in start_time:
-#     start_time = start_time.replace('UTC', '00:00 UTC')
-
 # define app layout
 layout = watershed_layouts(slider_marks, start_time_label)
 
@@ -64,24 +56,6 @@ print("computing layout")
 app.layout = layout
 print('finished computing layout')
 print('building plot')
-
-
-# @app.callback(
-#     Output('data-table', 'columns'),
-#     Input('weather-dropdown', 'value'),
-#     Input('hour-slider', 'value')
-# )
-# def initialize_data_table(variable, hour):
-#     data_table_columns = [
-#         {
-#             'name': 'hybas_id',
-#             'id': 'hybas_id'
-#         },
-#         {
-#             'name': f'{variable}_{dummy_code_hours[hour]}',
-#             'id': f'{variable}_{dummy_code_hours[hour]}'
-#         }
-#     ]
 
 
 @app.callback(
@@ -150,16 +124,6 @@ def filter_and_download(n_clicks, data, variable, hour):
             start_time=start_time_label
         )
 
-
-        # columns_to_transpose = []
-        # for col in download_df_f:
-        #     if col.startswith('t2m'):
-        #         columns_to_transpose.append(col)
-        # df_to_transpose = download_df_f[columns_to_transpose]
-        # download_df_f = download_df_f.drop(columns_to_transpose)
-
-        # return download_df.to_dict()
-
         return dcc.send_data_frame(download_df.to_csv, f'{country}_watersheds_weather_portal.csv')
 
 
@@ -180,11 +144,9 @@ def make_choropleth(variable, hour):
         zoom=4,
         center={'lat': 30, 'lon': 68},
         height=500,
-        # width=1000,
         title='Pakistan Watersheds',
         labels=labels,
         hover_data=['HYBAS_ID', f'{variable}_{dummy_code_hours[hour]}'],
-        # title='Weather variables aggregated over level 7 Pfafstetter watershed boundaries'
 
     )
 

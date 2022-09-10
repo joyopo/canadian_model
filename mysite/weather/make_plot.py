@@ -10,7 +10,7 @@ geographic_division_ids = {
     "census_tract": "CTUID"
 }
 
-# 'https://data.opendatasoft.com/explore/dataset/georef-canada-province@public/download/?format=geojson&timezone=America/New_York&lang=en'
+
 def read_provinces_gjson(url):
     with urlopen(url) as response:
         provinces_gjson = json.load(response)
@@ -18,7 +18,6 @@ def read_provinces_gjson(url):
     return provinces_gjson
 
 
-# '/Users/jpy/Downloads/georef-canada-province.geojson')
 def read_provinces_geopands(path: str):
     provinces_gdf = gpd.read_file(path)
 
@@ -30,16 +29,6 @@ def process_raw_df(df):
                     'valid_time']
     df = df.drop(cols_to_drop, axis=1)
     return df
-
-
-# "/Users/jpy/PycharmProjects/canadian_model/grib2/temperature/CMC_glb_TMP_TGL_2_latlon.15x.15_2022021500_P240.grib2"
-# def read_process_temp(path):
-#     df = grib_to_df(path)
-#     df = process_raw_df(df)  # TODO: specific to data source, consistent columns between variables?
-#     gdf_ca_t2m = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.longitude, df.latitude))
-#     gdf_ca_t2m = gdf_ca_t2m.set_crs(epsg=4326)
-#
-#     return gdf_ca_t2m
 
 
 def df_to_gdf(df):
@@ -73,7 +62,6 @@ def group_data(data, column):
 
 
 def spatial_join_and_group(data, polygons, column_aggregate: str):
-
     # create dictionary of aggregation methods for the columns in data
     aggregation_dictionary = {}
     for column in list(data.columns):
@@ -104,18 +92,6 @@ def spatial_join_and_group(data, polygons, column_aggregate: str):
     # data_grouped.columns = ["_".join(a) for a in data_grouped.columns.to_flat_index()]
 
     return data_grouped
-# lat = df['latitude'].to_list()
-# lon = df['longitude'].to_list()
-# temp = df['t2m'].to_list()
-
-# gdf = gpd.read_file('/Users/jpy/PycharmProjects/canadian_model/lpr_000b16a_e.zip')
-
-# gdf_ca_t2m = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.longitude, df.latitude))
-# gdf_ca_t2m = gdf_ca_t2m.set_crs(epsg=4326)
-
-# gdf_provinces = gdf.to_crs(epsg=4326)
-# gdf_provinces = gdf
-# t2m_provinces = gpd.sjoin(gdf_ca_t2m, gdf_provinces, how='left')
 
 
 def make_plot(df, geojson, featureidkey, locations):
@@ -131,73 +107,3 @@ def make_plot(df, geojson, featureidkey, locations):
                                )
 
     return fig
-
-
-# fig = px.choropleth_mapbox(data_grouped,
-#                            geojson=provinces,
-#                            locations=data_grouped.index,
-#                            featureidkey="properties.prov_name_en",
-#                            color="mean",
-# #                            center={"lat": 45.5517, "lon": -73.7073},
-#                            mapbox_style="open-street-map",
-# #                            zoom=8.5
-#                           )
-# fig.show()
-
-# def get_data():
-#     # read in census data
-#     gdf = gpd.read_file('/Users/jpy/Downloads/lcsd000b16a_e.zip')
-#     # set crs of census gdf
-#     gdf = gdf.to_crs("EPSG:4326")
-#     # test census crs
-#     assert gdf.crs.name == 'WGS 84', f"gdf has crs {gdf.crs.name}"
-#     if gdf.crs.name == 'WGS 84':
-#         print(f"gdf has crs {gdf.crs.name}")
-#
-#     # create geojson file from census data and load it to dictionary
-#     gdf.to_file("census_subdivisions.geojson", driver='GeoJSON')
-#     gjson = gdf.to_json()
-#     gjson_load = json.loads(gjson)
-#
-#     # read weather test and test CRS
-#     df = read_process_temp("/Users/jpy/PycharmProjects/canadian_model/grib2/temperature/CMC_glb_TMP_TGL_2_latlon.15x.15_2022021500_P240.grib2")
-#     assert df.crs.name == 'WGS 84', f"df has crs {df.crs.name}"
-#     if df.crs.name == 'WGS 84':
-#         print(f"df has crs {df.crs.name}")
-#
-#     # Spatial join of weather points and census division
-#     joined_df, data = join_provinces(df, gdf, geographic_division_ids['census_subdivision'])
-#
-#     print('finished joining data')
-#     # aggregate average data for given census division
-#     data_grouped = group_data(data, geographic_division_ids['census_subdivision'])
-#     print('finished grouping data')
-#     data_grouped.to_csv('census_subdivision_t2m.csv')
-#
-#     return gjson_load, data_grouped
-
-# make plot
-# fig = make_plot(
-#     df=data_grouped,
-#     geojson=gjson_load,
-#     featureidkey=f"properties.{geographic_division_ids['census_subdivision']}",
-#     locations=data_grouped.index,
-# )
-
-
-
-# if __name__ == '__main__':
-    # TODO: pull file from fetch grib2 function
-    # df = read_process_temp("/Users/jpy/PycharmProjects/canadian_model/grib2/temperature/CMC_glb_TMP_TGL_2_latlon.15x.15_2022021500_P240.grib2")
-    # provinces_geojson = read_provinces_gjson('https://data.opendatasoft.com/explore/dataset/georef-canada-province@public/download/?format=geojson&timezone=America/New_York&lang=en')
-    # provinces_gdf = read_provinces_geopands('/Users/jpy/Downloads/georef-canada-province.geojson')
-    # data = join_provinces_and_group(df, provinces_gdf)
-    #
-    # fig = make_plot(
-    #     df=data,
-    #     geojson=provinces_geojson,
-    #     featureidkey="properties.prov_name_en",
-    #     locations=data.index,
-    # )
-
-    # gjson_load, data_grouped = get_data()

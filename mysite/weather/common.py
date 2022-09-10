@@ -52,7 +52,6 @@ for hr in time_steps:
     VARIABLES[hr] = forecast_hour_variables
 
 
-
 def generate_plot_labels():
     """
     generate labels for plots. Call this function from dash_app to create label dictionary
@@ -60,7 +59,6 @@ def generate_plot_labels():
     """
     plot_labels = {}
     column_names = VARIABLE_ABRV.keys()
-    # ['t2m', 'si10', 'sde', 'prate']
 
     hour_forecast_text = {}
 
@@ -76,7 +74,6 @@ def generate_plot_labels():
 def generate_slider_marks():
     mark_style = {"writing-mode": "vertical-rl",
                   "color": 'black'}
-                  # "font-weight": 'bold'}
     marks = {}
     for hour in [int(x) for x in list(VARIABLES.keys())]:
         if hour == 72:
@@ -143,7 +140,6 @@ div_style = {
     'background-color': container_background,
     'margin-bottom': 10,
     'margin-top': 10,
-    # 'font-size': 8
 
 }
 slider_style = {
@@ -155,21 +151,15 @@ slider_style = {
     'background-color': interaction_color,
 }
 button_style = {
-    # 'border': '1px grey solid',
     'padding': 10,
     'marginBottom': 20,
     'background-color': interaction_color
 
-    # 'marginTop': 10
 }
 section_style = {
     'display': 'inline-block',
-    # 'height': '500',
     'vertical-align': 'middle',
     'width': '35%'
-
-    # 'margin': 'auto',
-    # 'width': '50%'
 }
 graph_style = {
     'display': 'inline-block',
@@ -215,15 +205,6 @@ def grid_layout(slider_marks, forecast_start_time):
                     id='hour-slider'
                 )], style=slider_style),
             ], style=div_style),
-
-            # html.Table([
-            #     html.Tr([html.Td(['Latitude']), html.Td(id='lat')]),
-            #     html.Tr([html.Td(['Longitude']), html.Td(id='lon')]),
-            #     html.Tr([html.Td(['Value']), html.Td(id='val')]),
-            #
-            # ]),
-
-            # html.Pre(id='click-data'),
 
             # datatable and text and button
 
@@ -466,7 +447,6 @@ def display_click_grid_data_in_datatable(variable, hour, clickdata, df, dummy_co
     latitude = clickdata['points'][0]['customdata'][0]
     longitude = clickdata['points'][0]['customdata'][1]
     value = df.loc[(df.id == location), f'{variable}_{dummy_code_hours[hour]}'].item()
-    # data['points'][0]['customdata'][2]
     # 'id' is the row id
 
     data_column_name = f'{dummy_code_hours[hour]} hr Forecast | {VARIABLE_ABRV[variable]["name"]} ({VARIABLE_ABRV[variable]["units"]})'
@@ -512,28 +492,6 @@ def filter_and_download_grid(data, variable, df, start_time):
     for i in location_ids:
         filtered_row = df.loc[df['id'] == i]
         download_df = pd.concat([download_df, filtered_row], axis=0)
-
-    # lat = data[0]['latitude']
-    # lon = data[0]['longitude']
-    # # function to get coordinates of square around click point here
-    #
-    # lat_lon_list = []
-    # lat_lon_list.append([lat, lon])
-
-    # lat_lon_list.append([lat + .15, lon])
-    # lat_lon_list.append([lat - .15, lon])
-    # lat_lon_list.append([lat, lon + .15])
-    # lat_lon_list.append([lat, lon - .15])
-    #
-    # lat_lon_list.append([lat + .15, lon + .15])
-    # lat_lon_list.append([lat - .15, lon - .15])
-    # lat_lon_list.append([lat + .15, lon - .15])
-    # lat_lon_list.append([lat - .15, lon + .15])
-
-    # download_df = pd.DataFrame(data={}, columns=df.columns)
-    # for i in lat_lon_list:
-    #     filtered_row = df.loc[(df['latitude'] == i[0]) & (df['longitude'] == i[1])]
-    #     download_df = download_df.append(filtered_row)
 
     # filter download_df to just the variable selected
     cols_to_keep = ['latitude', 'longitude', 'id', 'valid_time_0']
@@ -605,7 +563,6 @@ def filter_and_download_watershed(data, variable, df, hour, start_time):
 
     download_df = download_df[columns]
 
-    # TODO: figure out why download file isn't rounding
     download_df = download_df.round(2)
 
     return download_df
@@ -615,8 +572,6 @@ def update_datatable_grid(clickdata, variable, hour, existing_data, df, dummy_co
     logging.info(f'kwargs are {kwargs}')
     logging.info(f'callback context: {kwargs["callback_context"]}')
     logging.info(f'callback context attributes: {dir(kwargs["callback_context"])}')
-
-    # ipdb.set_trace()
 
     if len(kwargs['callback_context'].triggered) > 0:
         triggered_id = kwargs['callback_context'].triggered[0]['prop_id']
