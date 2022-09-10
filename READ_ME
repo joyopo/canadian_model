@@ -1,0 +1,44 @@
+# GEM Weather Model Access Portal
+
+GEM Weather Model Access Portal is a Django application for downloading and visualization weather forecast data from the
+Global Deterministic Prediction System (GDPS) of the Global Environmental Multiscale (GEM) weather model from 
+Environment Canada.
+
+## Background
+
+This application contains a technical approach for a functioning data visualization dashboard, which can serve to assist
+residents in remote regions of the world to better prepare for weather events. The prototype developed as part of this 
+project relies on the Django framework, Plotly visualization tools and Dash apps. A case study is deployed as a proof of
+concept over the nation of Pakistan, which is vulnerable to extreme weather events. 
+
+## Requirements
+
+Built on Python version `3.8.13` and Django version `3.2.13`
+
+## Installation
+
+Use the conda package manager to create the requirement environment from the environment.yml file.
+
+```bash
+conda env create -f environment.yml
+```
+
+## Usage
+
+From the command line, navigate to the `mysite` directory and launch the local server
+
+```bash
+python manage.py runserver
+```
+
+Allow up to 10 minutes for the local server to launch.
+
+Once the server is up, navigate to the following IP address of the server from a web browser (preferably Chrome):
+
+```bash
+http://127.0.0.1:8000/
+```
+
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
