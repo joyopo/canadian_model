@@ -1,18 +1,20 @@
 import datetime
+import dash
 from dash import dcc, callback_context
 from dash.dependencies import Input, Output, State
 import pandas as pd
 import json
 from django_plotly_dash import DjangoDash
 import plotly.express as px
+import plotly.graph_objects as go
 import logging
 from .common import generate_plot_labels, generate_slider_marks, watershed_layouts, \
     filter_and_download_watershed, append_datatable_row_watershed, update_datatable_row_watershed, VARIABLE_ABRV
 #
 # from mysite.weather.common import generate_plot_labels, generate_slider_marks, watershed_layouts, \
-#     filter_and_download_watershed, append_datatable_row, update_datatable_row, VARIABLE_ABRV
+#     filter_and_download_watershed, append_datatable_row_watershed, update_datatable_row_watershed, VARIABLE_ABRV
 
-# from . import file_download
+from . import file_download
 
 token = 'pk.eyJ1Ijoiam9lLXAteW91bmc5NiIsImEiOiJja3p4aGs3YjUwMWo3MnVuNmw2eDQxaTUzIn0.zeqhZg0rX0uY7C0oVktNjA'
 px.set_mapbox_access_token(token)
@@ -56,6 +58,23 @@ print("computing layout")
 app.layout = layout
 print('finished computing layout')
 print('building plot')
+
+
+# configure highlights -----------
+
+watershed_lookup = {feature['properties']['HYBAS_ID']: feature for feature in watersheds['features']}
+
+selections = set()
+
+
+def get_highlights(selections, geojson=watersheds, watershed_lookup=watershed_lookup):
+    geojson_highlights = dict()
+    for k in geojson.keys():
+        if k != 'features':
+            geojson_highlights[k] = geojson[k]
+        else:
+            geojson_highlights[k] = [watershed_lookup[selection] for selection in selections]
+    return geojson_highlights
 
 
 @app.callback(
@@ -130,9 +149,11 @@ def filter_and_download(n_clicks, data, variable, hour):
 @app.callback(
     Output("choropleth", 'figure'),
     Input('weather-dropdown', 'value'),
-    Input('hour-slider', 'value')
+    Input('hour-slider', 'value'),
+    Input('choropleth', 'clickData'),
+    State('data-table', 'data')
 )
-def make_choropleth(variable, hour):
+def make_choropleth(variable, hour, clickdata, data):
     fig = px.choropleth_mapbox(
         watershed_data_grouped,
         geojson=watersheds,
@@ -163,6 +184,7 @@ def make_choropleth(variable, hour):
             b=10,
             t=10,
         ),
+        uirevision=variable
     )
 
     fig.update_coloraxes(
@@ -171,6 +193,39 @@ def make_choropleth(variable, hour):
 
     )
 
+    # selected_hybas_list = set()
+    # for i in data:
+    #     hybas_id = i['hybas_id']
+    #     selected_hybas_list.add(hybas_id)
+
+    if clickdata is not None:
+        selected_hybas_id = clickdata['points'][0]['location']
+
+        if selected_hybas_id not in selections:
+            selections.add(selected_hybas_id)
+        else:
+            selections.remove(selected_hybas_id)
+
+    if len(selections) > 0:
+        # highlights contain the geojson information for only
+        # the selected watersheds
+        highlights = get_highlights(selections)
+
+        fig.add_trace(
+            px.choropleth_mapbox(watershed_data_grouped, geojson=highlights,
+                                 color=f'{variable}_{dummy_code_hours[hour]}',
+                                 locations=watershed_data_grouped['HYBAS_ID'],
+                                 featureidkey="properties.HYBAS_ID",
+                                 opacity=.66).data[0]
+        )
+
+    fig.update_traces(
+        dict(
+            marker_line_color='blue',
+            marker_line_width=2
+        ),
+        selector=dict(opacity=.66)
+    )
     return fig
 
 

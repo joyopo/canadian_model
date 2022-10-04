@@ -238,7 +238,7 @@ def grid_layout(slider_marks, forecast_start_time):
                     'id': 'variable_value'
                 }],
                 data=[],
-                row_deletable=True,
+                # row_deletable=True,
                 style_cell={'fontSize': 10,
                             'background-color': interaction_color
                             },
@@ -319,7 +319,7 @@ def watershed_layouts(slider_marks, forecast_start_time):
                     }
                 ],
                 data=[],
-                row_deletable=True
+                # row_deletable=True
             ),
 
             html.Div([
@@ -350,12 +350,21 @@ def append_datatable_row_watershed(variable, hour, clickdata, existing_data, df,
         }
     ]
 
-    existing_data.append(
-        {
-            'hybas_id': hybas_id,
-            data_column_name: round(value, 2),
-            'id': hybas_id}
-    )
+    existing_hybas_ids = [i['hybas_id'] for i in existing_data]
+
+    if hybas_id in existing_hybas_ids:
+        existing_data = [i for i in existing_data if not (i['hybas_id'] == hybas_id)]
+        # for i in range(len(existing_data)):
+        #     if existing_data[i]['hybas_id'] == hybas_id:
+        #         del existing_data[i]
+
+    else:
+        existing_data.append(
+            {
+                'hybas_id': hybas_id,
+                data_column_name: round(value, 2),
+                'id': hybas_id}
+        )
 
     return data_table_columns, existing_data
 

@@ -1,4 +1,4 @@
-import mysite.weather.file_download as file_download
+from . import file_download
 import dash_core_components as dcc
 import datetime
 from dash.dependencies import Input, Output, State
