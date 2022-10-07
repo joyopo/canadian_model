@@ -22,19 +22,19 @@ app = DjangoDash('canadian_grid')
 
 
 print("reading geojson")
-with open('/Users/jpy/Documents/canada_grid.geojson') as f:
+with open('weather/shapefiles/canada_grid.geojson') as f:
     grid = json.load(f)
 print("finished reading geojsons")
 
 print('reading in csv data')
 country = 'canada'
 df = pd.read_csv(
-    f'/Users/jpy/PycharmProjects/canadian_model/mysite/live_data/{country}/{country}.csv')
+    f'live_data/{country}/{country}.csv')
 print('df to gdf')
 gdf = file_download.df_to_gdf(df)
 print('done')
 
-grid_gdf = gpd.read_file('/Users/jpy/Documents/canada_grid.geojson')
+grid_gdf = gpd.read_file('weather/shapefiles/canada_grid.geojson')
 gdf.drop('index_right', axis=1, inplace=True)
 print('joining grib and grid')
 joined = gpd.sjoin(gdf, grid_gdf, how='left')

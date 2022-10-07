@@ -27,14 +27,14 @@ country = 'canada'
 
 print("reading geojson")
 
-with open('/Users/jpy/Documents/weather_portal/mapshaper_simplified/canadian_watersheds.geojson') as f:
+with open('weather/shapefiles/canadian_watersheds.geojson') as f:
     watersheds = json.load(f)
 print("finished reading geojsons")
 
 
 print('reading in csv data')
 
-watershed_data_grouped = pd.read_csv(f'/Users/jpy/PycharmProjects/canadian_model/mysite/live_data/canada/aggregated/watersheds/watersheds.csv')
+watershed_data_grouped = pd.read_csv(f'live_data/canada/aggregated/watersheds/watersheds.csv')
 
 print('making labels')
 labels = generate_plot_labels()

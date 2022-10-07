@@ -8,6 +8,7 @@ from django_plotly_dash import DjangoDash
 import plotly.express as px
 import plotly.graph_objects as go
 import logging
+import ipdb
 from .common import generate_plot_labels, generate_slider_marks, watershed_layouts, \
     filter_and_download_watershed, append_datatable_row_watershed, update_datatable_row_watershed, VARIABLE_ABRV
 #
@@ -36,7 +37,7 @@ print("finished reading geojsons")
 print('reading in csv data')
 
 country = 'pakistan'
-watershed_data_grouped = pd.read_csv(f'/Users/jpy/PycharmProjects/canadian_model/mysite/live_data/{country}/aggregated/watersheds/watersheds.csv')
+watershed_data_grouped = pd.read_csv(f'live_data/{country}/aggregated/watersheds/watersheds.csv')
 
 print('making labels')
 labels = generate_plot_labels()

@@ -20,19 +20,19 @@ token = 'pk.eyJ1Ijoiam9lLXAteW91bmc5NiIsImEiOiJja3p4aGs3YjUwMWo3MnVuNmw2eDQxaTUz
 
 px.set_mapbox_access_token(token)
 
-with open('/Users/jpy/Documents/pakistan_grid.geojson') as f:
+with open('weather/shapefiles/pakistan_grid.geojson') as f:
     pakistan_gjson = json.load(f)
 print('done reading gjson')
 print('reading live data')
 country = 'pakistan'
 df = pd.read_csv(
-    f'/Users/jpy/PycharmProjects/canadian_model/mysite/live_data/{country}/{country}.csv')
+    f'live_data/{country}/{country}.csv')
 gdf = file_download.df_to_gdf(df)
 
 
 # joining grid shapes and data
 print("joining gdfs")
-grid_gdf = gpd.read_file(f'/Users/jpy/Documents/{country}_grid.geojson')
+grid_gdf = gpd.read_file(f'weather/shapefiles/pakistan_grid.geojson')
 joined = gpd.sjoin(gdf, grid_gdf, how='left')
 columns = list(gdf.columns) + ['id']
 joined = joined[columns]
