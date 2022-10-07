@@ -6,14 +6,12 @@ import geopandas as gpd
 import xarray as xr
 import logging
 import time
-
 # swap imports for dash
 
 from . import make_plot  # , netcdf
 # from mysite.weather import make_plot, netcdf
-# from mysite.weather.common import PROJECT_ROOT_PATH, COUNTRIES, VARIABLES
-from .common import PROJECT_ROOT_PATH, COUNTRIES, VARIABLES
-
+# from mysite.weather.common import PROJECT_ROOT_PATH, COUNTRIES, VARIABLES, base_dir
+from .common import COUNTRIES, VARIABLES, base_dir
 
 logging.basicConfig(level=logging.INFO)
 
@@ -151,7 +149,7 @@ BOUNDS = {
 def read_country_border(country):
     with open('canada_borders.geojson') as f:
         canada_gjson = json.load(f)
-    pakistan_gdf = gpd.read_file('/Users/jpy/Downloads/pak_adm_ocha_pco_gaul_20181218_SHP/admin2')
+    pakistan_gdf = gpd.read_file('mysite/weather/shapefiles/pak_adm_ocha_pco_gaul_20181218_SHP/admin0')
 
     return canada_gjson
 
@@ -190,14 +188,14 @@ def fetch_grib2(file_list, country: str = 'canada'):
         forecast_hour = i[2]
         model_run_start = i[3]
         base_url = f'http://dd.weather.gc.ca/model_gem_global/15km/grib2/lat_lon/{model_run_start}/{forecast_hour}/'
-        filepath = f"{PROJECT_ROOT_PATH}/canadian_model/grib2/{country}/{variable_folder}/"
-        if not os.path.isfile(filepath+filename):
+        filepath = os.path.join(base_dir, f"grib2/{country}/{variable_folder}/")
+        if not os.path.isfile(os.path.join(filepath, filename)):
             logging.info(f'saving grib files for {country}')
             os.system(f"wget {base_url}{filename} -P {filepath}")
 
         filepaths.append(
             [
-                filepath+filename,  # full absolute filepath
+                os.path.join(filepath, filename),  # full absolute filepath
                 forecast_hour
             ]
         )
@@ -306,7 +304,7 @@ def combine_forecast_hours(country: str):
     d = dict()
     forecast_hours = list(VARIABLES.keys())
     for forecast_hour in forecast_hours:
-        d[forecast_hour] = pd.read_csv(f'{PROJECT_ROOT_PATH}/canadian_model/mysite/live_data/{country}/{forecast_hour}/{forecast_hour}_{country}.csv')
+        d[forecast_hour] = pd.read_csv(os.path.join(base_dir, f'live_data/{country}/{forecast_hour}/{forecast_hour}_{country}.csv'))
 
     df_list = []
 
@@ -347,13 +345,13 @@ def full_download(forecast_hour: str, country: str, current_day_utc, model_run_s
 def bound_to_country(df, country):
     gdf = df_to_gdf(df)
     if country == 'canada':
-        polygons = gpd.read_file('/Users/jpy/PycharmProjects/canadian_model/mysite/weather/provinces.zip')
+        polygons = gpd.read_file(os.path.join(base_dir, 'weather/shapefiles/provinces.zip'))
         polygons = polygons.loc[:, ['PRENAME', 'geometry']]
         polygons = polygons.to_crs('EPSG:4326')
         joined_gdf = gpd.sjoin(polygons, gdf, how='left')
         joined_gdf = joined_gdf.drop('geometry', axis=1)
     elif country == 'pakistan':
-        polygons = gpd.read_file('/Users/jpy/Downloads/pak_adm_ocha_pco_gaul_20181218_SHP/admin0')
+        polygons = gpd.read_file(os.path.join(base_dir, 'weather/shapefiles/pak_adm_ocha_pco_gaul_20181218_SHP/admin0'))
         joined_gdf = gpd.sjoin(polygons, gdf, how='left')
         joined_gdf = joined_gdf[df.columns]
         joined_gdf = joined_gdf.drop('geometry', axis=1)
@@ -365,12 +363,12 @@ def run_aggregations(current_day, model_run_start):
     for country in COUNTRIES:
         # Canada Watersheds
         logging.info('reading live data')
-        data = pd.read_csv(f'{PROJECT_ROOT_PATH}/canadian_model/mysite/live_data/{country}/{country}.csv')
+        data = pd.read_csv(os.path.join(base_dir, f'live_data/{country}/{country}.csv'))
         data_gdf = df_to_gdf(data)
         logging.info('reading watershed geofile')
         if country == 'canada':
             data_gdf.drop('index_right', inplace=True, axis=1)
-            watershed_gdf = gpd.read_file('/Users/jpy/Documents/weather_portal/mapshaper_simplified/canadian_watersheds.geojson')
+            watershed_gdf = gpd.read_file(os.path.join(base_dir, 'weather/shapefiles/canadian_watersheds.geojson'))
             watershed_gdf = watershed_gdf.set_crs(epsg=4326)
             watershed_grouped = make_plot.spatial_join_and_group(
                 data=data_gdf,
@@ -378,7 +376,7 @@ def run_aggregations(current_day, model_run_start):
                 column_aggregate='HYBAS_ID'
             )
         elif country == 'pakistan':
-            watershed_gdf = gpd.read_file('/Users/jpy/Documents/weather_portal/final_watershed_geojsons/pakistan_watersheds_level7.geojson')
+            watershed_gdf = gpd.read_file(os.path.join(base_dir, 'weather/shapefiles/pakistan_watersheds_level7.geojson'))
             watershed_gdf = watershed_gdf.set_crs(epsg=4326)
             watershed_grouped = make_plot.spatial_join_and_group(
                 data=data_gdf,
@@ -388,8 +386,8 @@ def run_aggregations(current_day, model_run_start):
         else:
             raise Exception
         logging.info('finished spatial join')
-        watershed_grouped.to_csv(f'/Users/jpy/PycharmProjects/canadian_model/archive/{country}/aggregated/watersheds/{current_day}_{model_run_start}.csv')
-        watershed_grouped.to_csv(f'/Users/jpy/PycharmProjects/canadian_model/mysite/live_data/{country}/aggregated/watersheds/watersheds.csv')
+        watershed_grouped.to_csv(os.path.join(base_dir, f'archive/{country}/aggregated/watersheds/{current_day}_{model_run_start}.csv'))
+        watershed_grouped.to_csv(os.path.join(base_dir, f'live_data/{country}/aggregated/watersheds/watersheds.csv'))
 
 
 def main():
@@ -415,7 +413,7 @@ def main():
                     current_day_utc=current_day_utc,
                     model_run_start=model_run_start
                 )
-                df.to_csv(f'{PROJECT_ROOT_PATH}/canadian_model/mysite/live_data/{country}/{hour}/{hour + "_" + country}.csv')
+                df.to_csv(os.path.join(base_dir, f'live_data/{country}/{hour}/{hour + "_" + country}.csv'))
 
             except:
                 model_run_start = '12'
@@ -429,13 +427,13 @@ def main():
                     current_day_utc=current_day_utc,
                     model_run_start=model_run_start
                 )
-                df.to_csv(f'{PROJECT_ROOT_PATH}/canadian_model/mysite/live_data/{country}/{hour}/{hour + "_" + country}.csv')
+                df.to_csv(os.path.join(base_dir, f'live_data/{country}/{hour}/{hour + "_" + country}.csv'))
 
         df_combined_forecast = combine_forecast_hours(country)
         df_combined_forecast = bound_to_country(df_combined_forecast, country)
         df_combined_forecast.to_csv(
-            f'{PROJECT_ROOT_PATH}/canadian_model/archive/{country}/csv/{current_day_utc}{model_run_start}_P{hour}.csv')
-        df_combined_forecast.to_csv(f'{PROJECT_ROOT_PATH}/canadian_model/mysite/live_data/{country}/{country}.csv')
+            os.path.join(base_dir, f'archive/{country}/csv/{current_day_utc}{model_run_start}_P{hour}.csv'))
+        df_combined_forecast.to_csv(os.path.join(base_dir, f'live_data/{country}/{country}.csv'))
         logging.info('writing netcdf')
 
     logging.info('running aggregations')

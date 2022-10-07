@@ -2,9 +2,12 @@ import datetime
 import json
 import logging
 import ipdb
+import os
 
 import pandas as pd
 from dash import dash_table, dcc, html
+
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PROJECT_ROOT_PATH = '/Users/jpy/PycharmProjects'
 
