@@ -67,6 +67,18 @@ watershed_lookup = {feature['properties']['HYBAS_ID']: feature for feature in wa
 
 selections = set()
 
+@app.callback(
+    Output('hour-slider', 'marks'),
+    Input('weather-dropdown', 'value')
+)
+def update_slider_marks(variable):
+    if variable == 'prate':
+        slider_marks.pop(0)
+    else:
+        pass
+
+    return slider_marks
+
 
 def get_highlights(selections, geojson=watersheds, watershed_lookup=watershed_lookup):
     geojson_highlights = dict()
@@ -217,7 +229,7 @@ def make_choropleth(variable, hour, clickdata, data):
                                  color=f'{variable}_{dummy_code_hours[hour]}',
                                  locations=watershed_data_grouped['HYBAS_ID'],
                                  featureidkey="properties.HYBAS_ID",
-                                 opacity=.66).data[0]
+                                 opacity=.8).data[0]
         )
 
     fig.update_traces(
@@ -225,7 +237,7 @@ def make_choropleth(variable, hour, clickdata, data):
             marker_line_color='blue',
             marker_line_width=2
         ),
-        selector=dict(opacity=.66)
+        selector=dict(opacity=.8)
     )
     return fig
 

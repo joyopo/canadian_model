@@ -59,6 +59,34 @@ print('finished computing layout')
 print('building plot')
 
 
+watershed_lookup = {feature['properties']['HYBAS_ID']: feature for feature in watersheds['features']}
+
+selections = set()
+
+
+def get_highlights(selections, geojson=watersheds, watershed_lookup=watershed_lookup):
+    geojson_highlights = dict()
+    for k in geojson.keys():
+        if k != 'features':
+            geojson_highlights[k] = geojson[k]
+        else:
+            geojson_highlights[k] = [watershed_lookup[selection] for selection in selections]
+    return geojson_highlights
+
+
+@app.callback(
+    Output('hour-slider', 'marks'),
+    Input('weather-dropdown', 'value')
+)
+def update_slider_marks(variable):
+    if variable == 'prate':
+        slider_marks.pop(0)
+    else:
+        pass
+
+    return slider_marks
+
+
 @app.callback(
     Output('data-table', 'columns'),
     Output('data-table', 'data'),
@@ -123,9 +151,11 @@ def filter_and_download(n_clicks, data, variable, hour):
 @app.callback(
     Output("choropleth", 'figure'),
     Input('weather-dropdown', 'value'),
-    Input('hour-slider', 'value')
+    Input('hour-slider', 'value'),
+    Input('choropleth', 'clickData'),
+    State('data-table', 'data')
 )
-def make_choropleth(variable, hour):
+def make_choropleth(variable, hour, clickdata, data):
     fig = px.choropleth_mapbox(
         watershed_data_grouped,
         geojson=watersheds,
@@ -156,6 +186,7 @@ def make_choropleth(variable, hour):
             b=10,
             t=10,
         ),
+        uirevision=variable
     )
 
     fig.update_coloraxes(
@@ -163,6 +194,36 @@ def make_choropleth(variable, hour):
         colorbar_title_side='top'
 
     )
+
+    if clickdata is not None:
+        selected_hybas_id = clickdata['points'][0]['location']
+
+        if selected_hybas_id not in selections:
+            selections.add(selected_hybas_id)
+        else:
+            selections.remove(selected_hybas_id)
+
+    if len(selections) > 0:
+        # highlights contain the geojson information for only
+        # the selected watersheds
+        highlights = get_highlights(selections)
+
+        fig.add_trace(
+            px.choropleth_mapbox(watershed_data_grouped, geojson=highlights,
+                                 color=f'{variable}_{dummy_code_hours[hour]}',
+                                 locations=watershed_data_grouped['HYBAS_ID'],
+                                 featureidkey="properties.HYBAS_ID",
+                                 opacity=.8).data[0]
+        )
+
+    fig.update_traces(
+        dict(
+            marker_line_color='blue',
+            marker_line_width=2
+        ),
+        selector=dict(opacity=.8)
+    )
+
 
     return fig
 

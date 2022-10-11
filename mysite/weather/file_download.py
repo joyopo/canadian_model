@@ -345,7 +345,7 @@ def full_download(forecast_hour: str, country: str, current_day_utc, model_run_s
 def bound_to_country(df, country):
     gdf = df_to_gdf(df)
     if country == 'canada':
-        polygons = gpd.read_file(os.path.join(base_dir, 'weather/shapefiles/provinces.zip'))
+        polygons = gpd.read_file(os.path.join(base_dir, 'weather/shapefiles/canada_bounds'))
         polygons = polygons.loc[:, ['PRENAME', 'geometry']]
         polygons = polygons.to_crs('EPSG:4326')
         joined_gdf = gpd.sjoin(polygons, gdf, how='left')

@@ -205,7 +205,8 @@ def grid_layout(slider_marks, forecast_start_time):
                     step=1,
                     marks=slider_marks,
                     value=0,
-                    id='hour-slider'
+                    id='hour-slider',
+                    included=False
                 )], style=slider_style),
             ], style=div_style),
 
@@ -296,7 +297,8 @@ def watershed_layouts(slider_marks, forecast_start_time):
                     step=1,
                     marks=slider_marks,
                     value=0,
-                    id='hour-slider'
+                    id='hour-slider',
+                    included=False
                 )], style=slider_style),
             ], style=div_style),
         ], style=section_style),
@@ -397,6 +399,7 @@ def update_datatable_row_watershed(variable, hour, existing_data, df, dummy_code
 
 def append_datatable_row_grid(variable, hour, clickdata, existing_data, df, dummy_code_hours, start_time):
     location = clickdata['points'][0]['location']
+    # ipdb.set_trace()
     latitude = clickdata['points'][0]['customdata'][0]
     longitude = clickdata['points'][0]['customdata'][1]
     value = df.loc[(df.id == location), f'{variable}_{dummy_code_hours[hour]}'].item()
@@ -418,14 +421,20 @@ def append_datatable_row_grid(variable, hour, clickdata, existing_data, df, dumm
         'id': data_column_name
     }]
 
-    existing_data.append(
-        {
-            'location_id': location,
-            'latitude': latitude,
-            'longitude': longitude,
-            data_column_name: value,
-            'id': 0}
-    )
+    existing_ids = [i['location_id'] for i in existing_data]
+
+    if location in existing_ids:
+        existing_data = [i for i in existing_data if not (i['location_id'] == location)]
+
+    else:
+        existing_data.append(
+            {
+                'location_id': location,
+                'latitude': latitude,
+                'longitude': longitude,
+                data_column_name: value,
+                'id': 0}
+        )
 
     return data_table_columns, existing_data
 
