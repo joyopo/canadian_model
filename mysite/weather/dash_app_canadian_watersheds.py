@@ -7,7 +7,7 @@ from django_plotly_dash import DjangoDash
 import plotly.express as px
 
 from .common import generate_plot_labels, generate_slider_marks, grid_layout, watershed_layouts, \
-    filter_and_download_watershed, update_datatable_row_watershed, append_datatable_row_watershed
+    filter_and_download_watershed, update_datatable_row_watershed, append_datatable_row_watershed, update_slider_marks
 
 # from mysite.weather.common import generate_plot_labels, generate_slider_marks, grid_layout, watershed_layouts, \
 #     filter_and_download_watershed, update_datatable_row, append_datatable_row
@@ -76,15 +76,19 @@ def get_highlights(selections, geojson=watersheds, watershed_lookup=watershed_lo
 
 @app.callback(
     Output('hour-slider', 'marks'),
-    Input('weather-dropdown', 'value')
+    Output('hour-slider', 'value'),
+    Input('weather-dropdown', 'value'),
+    Input('hour-slider', 'marks'),
+    Input('hour-slider', 'value')
 )
-def update_slider_marks(variable):
-    if variable == 'prate':
-        slider_marks.pop(0)
-    else:
-        pass
+def update_marks(variable, current_slider_marks, value):
+    new_marks, value = update_slider_marks(
+        variable=variable,
+        slider_marks=current_slider_marks,
+        value=value
+    )
 
-    return slider_marks
+    return new_marks, value
 
 
 @app.callback(

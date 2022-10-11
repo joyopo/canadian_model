@@ -8,7 +8,7 @@ import json
 import plotly.express as px
 from django_plotly_dash import DjangoDash
 from .common import generate_plot_labels, generate_slider_marks, generate_radio_options, \
-    filter_and_download_grid, grid_layout, update_datatable_grid
+    filter_and_download_grid, grid_layout, update_datatable_grid, update_slider_marks
 
 # from mysite.weather.common import generate_plot_labels, generate_slider_marks, generate_radio_options, \
 #     display_click_grid_data_in_datatable, filter_and_download_grid, grid_layout, update_datatable_grid
@@ -75,16 +75,19 @@ def get_highlights(selections, geojson=pakistan_gjson, grid_lookup=grid_lookup):
 
 @app.callback(
     Output('hour-slider', 'marks'),
-    Input('weather-dropdown', 'value')
+    Output('hour-slider', 'value'),
+    Input('weather-dropdown', 'value'),
+    Input('hour-slider', 'marks'),
+    Input('hour-slider', 'value')
 )
-def update_slider_marks(variable):
-    if variable == 'prate':
-        slider_marks.pop(0)
-    else:
-        pass
+def update_marks(variable, current_slider_marks, value):
+    new_marks, value = update_slider_marks(
+        variable=variable,
+        slider_marks=current_slider_marks,
+        value=value
+    )
 
-    return slider_marks
-
+    return new_marks, value
 
 
 @app.callback(

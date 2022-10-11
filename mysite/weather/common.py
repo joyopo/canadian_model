@@ -5,7 +5,8 @@ import ipdb
 import os
 
 import pandas as pd
-from dash import dash_table, dcc, html
+from dash import dash_table, dcc, html, Output, Input
+
 
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -102,7 +103,20 @@ def generate_slider_marks():
     for key in list(dummy_code_hours.keys()):
         marks[key] = marks.pop(dummy_code_hours[key])
 
+    # ipdb.set_trace()
     return marks, dummy_code_hours
+
+
+def update_slider_marks(variable, slider_marks, value):
+    # ipdb.set_trace()
+    if variable == 'prate':
+        slider_marks.pop('0')
+        if value == 0:
+            value = 1
+    else:
+        slider_marks, dummy_code_hours = generate_slider_marks()
+
+    return slider_marks, value
 
 
 def generate_radio_options():
