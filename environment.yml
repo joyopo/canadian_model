@@ -227,4 +227,3 @@ dependencies:
     - werkzeug==2.0.3
     - zipp==3.8.0
     - zope-interface==5.4.0
-prefix: /Users/jpy/opt/anaconda3/envs/weather_portal
