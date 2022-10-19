@@ -15,5 +15,4 @@
 # live_data/canada/168/
 # live_data/canada/240/
 
-/app/live_data/
-
+*.csv
