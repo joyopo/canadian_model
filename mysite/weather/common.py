@@ -437,6 +437,7 @@ def append_datatable_row_grid(variable, hour, clickdata, existing_data, df, dumm
 
     existing_ids = [i['location_id'] for i in existing_data]
 
+    # prevents duplicate entries in datatable
     if location in existing_ids:
         existing_data = [i for i in existing_data if not (i['location_id'] == location)]
 

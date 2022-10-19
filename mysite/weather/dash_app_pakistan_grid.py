@@ -5,6 +5,7 @@ from dash.dependencies import Input, Output, State
 import pandas as pd
 import geopandas as gpd
 import json
+import logging
 import plotly.express as px
 from django_plotly_dash import DjangoDash
 from .common import generate_plot_labels, generate_slider_marks, generate_radio_options, \
@@ -14,6 +15,8 @@ from .common import generate_plot_labels, generate_slider_marks, generate_radio_
 #     display_click_grid_data_in_datatable, filter_and_download_grid, grid_layout, update_datatable_grid
 
 # app = dash.Dash(__name__)
+logging.basicConfig(level=logging.INFO)
+
 app = DjangoDash('pakistan_grid')
 
 token = 'pk.eyJ1Ijoiam9lLXAteW91bmc5NiIsImEiOiJja3p4aGs3YjUwMWo3MnVuNmw2eDQxaTUzIn0.zeqhZg0rX0uY7C0oVktNjA'
@@ -60,7 +63,16 @@ print('making plot')
 
 grid_lookup = {feature['properties']['id']: feature for feature in pakistan_gjson['features']}
 
-selections = set()
+# selections = set()
+
+@app.callback(
+    Output('memory', 'data'),
+    Input('data-table', 'data')
+)
+def get_selections(datatable_data):
+    locations = [i['location_id'] for i in datatable_data]
+    logging.info(f'selected locations: {locations}')
+    return locations
 
 
 def get_highlights(selections, geojson=pakistan_gjson, grid_lookup=grid_lookup):
@@ -135,8 +147,9 @@ def filter_and_download(n_clicks, data, variable):
     Input('weather-dropdown', 'value'),
     Input('hour-slider', 'value'),
     Input('choropleth', 'clickData'),
+    State('memory', 'data')
 )
-def make_choropleth(variable, hour, clickdata):
+def make_choropleth(variable, hour, clickdata, memory):
     fig = px.choropleth_mapbox(
         joined,
         geojson=pakistan_gjson,
@@ -185,6 +198,10 @@ def make_choropleth(variable, hour, clickdata):
         pass
 
     if clickdata is not None:
+        logging.info(f'store memory: {memory}')
+        selections = set(memory)
+
+        logging.info(f'selections set: {selections}')
         selected_location = clickdata['points'][0]['location']
 
         if selected_location not in selections:
@@ -192,23 +209,23 @@ def make_choropleth(variable, hour, clickdata):
         else:
             selections.remove(selected_location)
 
-    if len(selections) > 0:
-        # highlights contain the geojson information for only
-        # the selected watersheds
-        highlights = get_highlights(selections)
+        if len(selections) > 0:
+            # highlights contain the geojson information for only
+            # the selected watersheds
+            highlights = get_highlights(selections)
 
-        fig.add_trace(
-            px.choropleth_mapbox(
-                joined,
-                geojson=highlights,
-                color=f'{variable}_{dummy_code_hours[hour]}',
-                locations='id',
-                featureidkey='properties.id',
-                opacity=.8,
-                hover_data=['longitude', 'latitude', f'{variable}_{dummy_code_hours[hour]}'],
-                custom_data=['latitude', 'longitude', f'{variable}_{dummy_code_hours[hour]}']
-            ).data[0],
-        )
+            fig.add_trace(
+                px.choropleth_mapbox(
+                    joined,
+                    geojson=highlights,
+                    color=f'{variable}_{dummy_code_hours[hour]}',
+                    locations='id',
+                    featureidkey='properties.id',
+                    opacity=.8,
+                    hover_data=['longitude', 'latitude', f'{variable}_{dummy_code_hours[hour]}'],
+                    custom_data=['latitude', 'longitude', f'{variable}_{dummy_code_hours[hour]}']
+                ).data[0],
+            )
 
     fig.update_traces(
         dict(
