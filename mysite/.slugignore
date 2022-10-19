@@ -16,3 +16,11 @@
 # live_data/canada/240/
 
 *.csv
+/app/live_data/
+/app/live_data
+/live_data
+/live_data/
+live_data/
+~./live_data
+/mysite/live_data/
+mysite/live_data/
