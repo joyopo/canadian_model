@@ -7,6 +7,7 @@
 
 *.csv
 !pakistan.csv
+!live_data/pakistan/aggregated/watersheds/watersheds.csv
 
 dash_app_canadian_watersheds.py
 dash_app_canadian_grid.py
