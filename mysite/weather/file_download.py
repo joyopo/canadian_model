@@ -260,14 +260,14 @@ def grib_to_df(filepaths: list, country: str):
             pass
 
         # discretize numerical weather data into bins
-        bins = BINS[variable]['bins']
-        labels = BINS[variable]['labels']
-        df[f'{variable}_{forecast_hour}_binned'] = pd.cut(
-            df[f'{variable}_{forecast_hour}'],
-            bins=bins,
-            labels=labels
-        )
-        cols_to_keep = ['latitude', 'longitude', f'{variable}_{forecast_hour}', f'valid_time_{forecast_hour}', f'{variable}_{forecast_hour}_binned']
+        # bins = BINS[variable]['bins']
+        # labels = BINS[variable]['labels']
+        # df[f'{variable}_{forecast_hour}_binned'] = pd.cut(
+        #     df[f'{variable}_{forecast_hour}'],
+        #     bins=bins,
+        #     labels=labels
+        # )
+        cols_to_keep = ['latitude', 'longitude', f'{variable}_{forecast_hour}', f'valid_time_{forecast_hour}'] # , f'{variable}_{forecast_hour}_binned']
         df = df[df.columns.intersection(cols_to_keep)]
         logging.info(f"processed data from {filepath}")
         df_list.append([df, forecast_hour])
