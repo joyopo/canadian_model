@@ -15,12 +15,12 @@
 # live_data/canada/168/
 # live_data/canada/240/
 
-*.csv
-/app/live_data/
-/app/live_data
-/live_data
-/live_data/
-live_data/
-~./live_data
-/mysite/live_data/
-mysite/live_data/
+# *.csv
+# /app/live_data/
+# /app/live_data
+# /live_data
+# /live_data/
+# live_data/
+# ~./live_data
+# /mysite/live_data/
+# mysite/live_data/
