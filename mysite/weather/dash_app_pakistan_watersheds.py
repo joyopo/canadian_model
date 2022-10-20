@@ -31,7 +31,7 @@ logging.basicConfig(level=logging.INFO)
 print("reading geojson")
 
 
-with open('/Users/jpy/Documents/weather_portal/final_watershed_geojsons/pakistan_watersheds_level7.geojson') as f:
+with open('weather/shapefiles/pakistan_watersheds_level7.geojson') as f:
     watersheds = json.load(f)
 print("finished reading geojsons")
 
