@@ -6,3 +6,4 @@
 !.elasticbeanstalk/*.global.yml
 
 *.csv
+!pakistan.csv
