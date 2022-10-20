@@ -8,10 +8,10 @@ import logging
 import time
 # swap imports for dash
 
-from . import make_plot  # , netcdf
-# from mysite.weather import make_plot, netcdf
-# from mysite.weather.common import PROJECT_ROOT_PATH, COUNTRIES, VARIABLES, base_dir
-from .common import COUNTRIES, VARIABLES, base_dir
+# from . import make_plot  # , netcdf
+from mysite.weather import make_plot
+from mysite.weather.common import COUNTRIES, VARIABLES, base_dir
+# from .common import COUNTRIES, VARIABLES, base_dir
 
 logging.basicConfig(level=logging.INFO)
 
