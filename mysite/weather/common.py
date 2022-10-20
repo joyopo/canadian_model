@@ -12,7 +12,7 @@ base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PROJECT_ROOT_PATH = '/Users/jpy/PycharmProjects'
 
-COUNTRIES = ['pakistan', 'canada']
+COUNTRIES = ['pakistan'] # , 'canada']
 
 VARIABLE_ABRV = {
     't2m': {

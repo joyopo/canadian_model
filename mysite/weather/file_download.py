@@ -130,12 +130,12 @@ CANADA_BOUNDS = {
 }
 
 BOUNDS = {
-    'canada': {
-        'MIN_LONG': -140.99778,
-        'MAX_LONG': -52.6480987209,
-        'MIN_LAT': 41.6751050889,
-        'MAX_LAT': 83.23324
-    },
+    # 'canada': {
+    #     'MIN_LONG': -140.99778,
+    #     'MAX_LONG': -52.6480987209,
+    #     'MIN_LAT': 41.6751050889,
+    #     'MAX_LAT': 83.23324
+    # },
 
     'pakistan': {
         'MIN_LONG': 60,
