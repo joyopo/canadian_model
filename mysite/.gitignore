@@ -7,3 +7,10 @@
 
 *.csv
 !pakistan.csv
+
+dash_app_canadian_watersheds.py
+dash_app_canadian_grid.py
+
+*.geojson
+!pakistan_grid.geojson
+!pakistan_watersheds_level7.geojson
