@@ -107,7 +107,7 @@ def df_to_gdf(df):
     :param df: df must have columns 'latitude' and 'longitude'
     :return: geodataframe with points geomoetry
     """
-    gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.longitude, df.latitude))
+    gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df['longitude'], df['latitude']))
     gdf = gdf.set_crs(epsg=4326)
 
     return gdf
@@ -431,8 +431,8 @@ def main():
 
         df_combined_forecast = combine_forecast_hours(country)
         df_combined_forecast = bound_to_country(df_combined_forecast, country)
-        df_combined_forecast.to_csv(
-            os.path.join(base_dir, f'archive/{country}/csv/{current_day_utc}{model_run_start}_P{hour}.csv'))
+        # df_combined_forecast.to_csv(
+        #     os.path.join(base_dir, f'archive/{country}/csv/{current_day_utc}{model_run_start}_P{hour}.csv'))
         df_combined_forecast.to_csv(os.path.join(base_dir, f'live_data/{country}/{country}.csv'))
         logging.info('writing netcdf')
 
