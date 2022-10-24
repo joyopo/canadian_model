@@ -74,7 +74,7 @@ watershed_lookup = {feature['properties']['HYBAS_ID']: feature for feature in wa
     Input('data-table', 'data')
 )
 def get_selections(datatable_data):
-    locations = [i['location_id'] for i in datatable_data]
+    locations = [i['HYBAS_ID'] for i in datatable_data]
     logging.info(f'selected locations: {locations}')
     return locations
 
