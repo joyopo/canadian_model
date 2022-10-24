@@ -228,7 +228,10 @@ def grid_layout(slider_marks, forecast_start_time):
 
         ], style=section_style),
         dcc.Download(id="download"),
-        dcc.Store(id='memory'),
+        dcc.Store(
+            id='memory',
+            data=[]
+        ),
 
         html.Div(
             [
@@ -317,7 +320,10 @@ def watershed_layouts(slider_marks, forecast_start_time):
             ], style=div_style),
         ], style=section_style),
         dcc.Download(id="download"),
-        dcc.Store(id='memory'),
+        dcc.Store(
+            id='memory',
+            data=[]
+        ),
         html.Div([dcc.Graph(id='choropleth')],
                  style=graph_style),
         html.Div([

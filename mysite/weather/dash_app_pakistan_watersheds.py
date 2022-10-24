@@ -69,14 +69,16 @@ watershed_lookup = {feature['properties']['HYBAS_ID']: feature for feature in wa
 # selections = set()
 
 
-@app.callback(
-    Output('memory', 'data'),
-    Input('data-table', 'data')
-)
-def get_selections(datatable_data):
-    locations = [i['hybas_id'] for i in datatable_data]
-    logging.info(f'selected locations: {locations}')
-    return locations
+# @app.callback(
+#     Output('memory', 'data'),
+#     Input('choropleth', 'clickData'),
+#     State('memory', 'data')
+# )
+# def get_selections(clickdata, memory):
+#
+#     locations = [i['hybas_id'] for i in datatable_data]
+#     logging.info(f'selected locations: {locations}')
+#     return locations
 
 
 @app.callback(
@@ -177,6 +179,7 @@ def filter_and_download(n_clicks, data, variable, hour):
 
 @app.callback(
     Output("choropleth", 'figure'),
+    Output('memory', 'data'),
     Input('weather-dropdown', 'value'),
     Input('hour-slider', 'value'),
     Input('choropleth', 'clickData'),
@@ -239,6 +242,9 @@ def make_choropleth(variable, hour, clickdata, memory):
         else:
             selections.remove(selected_hybas_id)
 
+        new_memory_data = list(selections)
+        logging.info(f'new highlight data: {selections}')
+
         if len(selections) > 0:
             # highlights contain the geojson information for only
             # the selected watersheds
@@ -251,6 +257,8 @@ def make_choropleth(variable, hour, clickdata, memory):
                                      featureidkey="properties.HYBAS_ID",
                                      opacity=.8).data[0]
             )
+    else:
+        new_memory_data = memory
 
     fig.update_traces(
         dict(
@@ -259,7 +267,7 @@ def make_choropleth(variable, hour, clickdata, memory):
         ),
         selector=dict(opacity=.8)
     )
-    return fig
+    return fig, new_memory_data
 
 
 if __name__ == '__main__':

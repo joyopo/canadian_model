@@ -65,14 +65,14 @@ grid_lookup = {feature['properties']['id']: feature for feature in pakistan_gjso
 
 # selections = set()
 
-@app.callback(
-    Output('memory', 'data'),
-    Input('data-table', 'data')
-)
-def get_selections(datatable_data):
-    locations = [i['location_id'] for i in datatable_data]
-    logging.info(f'selected locations: {locations}')
-    return locations
+# @app.callback(
+#     Output('memory', 'data'),
+#     Input('data-table', 'data')
+# )
+# def get_selections(datatable_data):
+#     locations = [i['location_id'] for i in datatable_data]
+#     logging.info(f'selected locations: {locations}')
+#     return locations
 
 
 def get_highlights(selections, geojson=pakistan_gjson, grid_lookup=grid_lookup):
@@ -144,6 +144,7 @@ def filter_and_download(n_clicks, data, variable):
 
 @app.callback(
     Output("choropleth", 'figure'),
+    Output('memory', 'data'),
     Input('weather-dropdown', 'value'),
     Input('hour-slider', 'value'),
     Input('choropleth', 'clickData'),
@@ -209,6 +210,9 @@ def make_choropleth(variable, hour, clickdata, memory):
         else:
             selections.remove(selected_location)
 
+        new_memory_data = list(selections)
+        logging.info(f'new highlight data: {selections}')
+
         if len(selections) > 0:
             # highlights contain the geojson information for only
             # the selected watersheds
@@ -227,6 +231,9 @@ def make_choropleth(variable, hour, clickdata, memory):
                 ).data[0],
             )
 
+    else:
+        new_memory_data = memory
+
     fig.update_traces(
         dict(
             marker_line_color='blue',
@@ -235,7 +242,7 @@ def make_choropleth(variable, hour, clickdata, memory):
         selector=dict(opacity=.8)
     )
 
-    return fig
+    return fig, new_memory_data
 
 
 print("finished making plot")
