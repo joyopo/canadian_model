@@ -221,13 +221,11 @@ def filter_and_download(n_clicks, data, variable, hour):
 
 @app.callback(
     Output("choropleth", 'figure'),
-    Output('memory', 'data'),
     Input('weather-dropdown', 'value'),
     Input('hour-slider', 'value'),
     Input('choropleth', 'clickData'),
-    State('memory', 'data')
 )
-def make_choropleth(variable, hour, clickdata, memory):
+def make_choropleth(variable, hour):
     fig = px.choropleth_mapbox(
         watershed_data_grouped,
         geojson=watersheds,
