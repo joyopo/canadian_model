@@ -225,7 +225,7 @@ def grib_to_df(filepaths: list, country: str):
 
         # open grib2 file in python
 
-        ds = xr.open_dataset(filepath, engine='scipy')
+        ds = xr.open_dataset(filepath)
 
         # filter ds to data array of variable
         variable = list(ds.data_vars.keys())[0]
