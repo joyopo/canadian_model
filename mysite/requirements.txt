@@ -35,6 +35,7 @@ Django==3.2.13
 django-plotly-dash==2.0.0
 dpd-components==0.1.0
 eccodes==1.2.0
+ecmwflibs
 executing==0.8.3
 findlibs==0.0.2
 Fiona==1.8.21
