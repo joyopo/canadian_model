@@ -71,56 +71,12 @@ watershed_lookup = {feature['properties']['HYBAS_ID']: feature for feature in wa
 
 @app.callback(
     Output('memory', 'data'),
-    Input('choropleth', 'clickData'),
-    State('memory', 'data')
+    Input('data-table', 'data')
 )
-def update_highlight_list(clickdata, memory):
-    if clickdata is not None:
-        logging.info(f'store memory: {memory}')
-        selections = set(memory)
-        logging.info(f'selections set: {selections}')
-
-        selected_hybas_id = clickdata['points'][0]['location']
-
-        if selected_hybas_id not in selections:
-            selections.add(selected_hybas_id)
-        else:
-            selections.remove(selected_hybas_id)
-    else:
-        selections = memory
-    return list(selections)
-
-
-@app.callback(
-    Output('choropleth', 'figure'),
-    Input('memory', 'data'),
-    State('choropleth', 'figure'),
-    State('weather-dropdown', 'value'),
-    State('hour-slider', 'value')
-)
-def highlight(memory, fig, variable, hour):
-    selections = memory
-    if len(selections) > 0:
-        # highlights contain the geojson information for only
-        # the selected watersheds
-        highlights = get_highlights(selections)
-
-        fig.add_trace(
-            px.choropleth_mapbox(watershed_data_grouped, geojson=highlights,
-                                 color=f'{variable}_{dummy_code_hours[hour]}',
-                                 locations=watershed_data_grouped['HYBAS_ID'],
-                                 featureidkey="properties.HYBAS_ID",
-                                 opacity=.8).data[0]
-        )
-
-        fig.update_traces(
-            dict(
-                marker_line_color='blue',
-                marker_line_width=2
-            ),
-            selector=dict(opacity=.8)
-        )
-    return fig
+def get_selections(datatable_data):
+    locations = [i['hybas_id'] for i in datatable_data]
+    logging.info(f'selected locations: {locations}')
+    return locations
 
 
 @app.callback(
@@ -224,8 +180,9 @@ def filter_and_download(n_clicks, data, variable, hour):
     Input('weather-dropdown', 'value'),
     Input('hour-slider', 'value'),
     Input('choropleth', 'clickData'),
+    State('memory', 'data')
 )
-def make_choropleth(variable, hour):
+def make_choropleth(variable, hour, clickdata, memory):
     fig = px.choropleth_mapbox(
         watershed_data_grouped,
         geojson=watersheds,
@@ -270,7 +227,39 @@ def make_choropleth(variable, hour):
     #     hybas_id = i['hybas_id']
     #     selected_hybas_list.add(hybas_id)
 
-    return fig #, new_memory_data
+    if clickdata is not None:
+        logging.info(f'store memory: {memory}')
+        selections = set(memory)
+        logging.info(f'selections set: {selections}')
+
+        selected_hybas_id = clickdata['points'][0]['location']
+
+        if selected_hybas_id not in selections:
+            selections.add(selected_hybas_id)
+        else:
+            selections.remove(selected_hybas_id)
+
+        if len(selections) > 0:
+            # highlights contain the geojson information for only
+            # the selected watersheds
+            highlights = get_highlights(selections)
+
+            fig.add_trace(
+                px.choropleth_mapbox(watershed_data_grouped, geojson=highlights,
+                                     color=f'{variable}_{dummy_code_hours[hour]}',
+                                     locations=watershed_data_grouped['HYBAS_ID'],
+                                     featureidkey="properties.HYBAS_ID",
+                                     opacity=.8).data[0]
+            )
+
+    fig.update_traces(
+        dict(
+            marker_line_color='blue',
+            marker_line_width=2
+        ),
+        selector=dict(opacity=.8)
+    )
+    return fig
 
 
 if __name__ == '__main__':
