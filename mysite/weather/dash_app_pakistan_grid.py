@@ -149,7 +149,9 @@ def filter_and_download(n_clicks, data, variable):
     Input('choropleth', 'clickData'),
     State('memory', 'data')
 )
-def make_choropleth(variable, hour, clickdata, memory):
+def make_choropleth(variable, hour, clickdata, memory, callback_context):
+    triggered_id = callback_context.triggered[0]['prop_id']
+
     fig = px.choropleth_mapbox(
         joined,
         geojson=pakistan_gjson,
@@ -197,42 +199,40 @@ def make_choropleth(variable, hour, clickdata, memory):
     else:
         pass
 
-    if clickdata is not None:
-        logging.info(f'store memory: {memory}')
-        selections = set(memory)
+    selections = set(memory)
 
-        logging.info(f'selections set: {selections}')
+    if triggered_id == 'choropleth.clickData':
         selected_location = clickdata['points'][0]['location']
-
         if selected_location not in selections:
             selections.add(selected_location)
-        else:
+        elif selected_location in selections:
             selections.remove(selected_location)
 
-        if len(selections) > 0:
-            # highlights contain the geojson information for only
-            # the selected watersheds
-            highlights = get_highlights(selections)
+    # highlights contain the geojson information for only
+    # the selected watersheds
+    highlights = get_highlights(selections)
+    logging.info(f'store memory: {memory}')
+    logging.info(f'selections set: {selections}')
 
-            fig.add_trace(
-                px.choropleth_mapbox(
-                    joined,
-                    geojson=highlights,
-                    color=f'{variable}_{dummy_code_hours[hour]}',
-                    locations='id',
-                    featureidkey='properties.id',
-                    opacity=.8,
-                    hover_data=['longitude', 'latitude', f'{variable}_{dummy_code_hours[hour]}'],
-                    custom_data=['latitude', 'longitude', f'{variable}_{dummy_code_hours[hour]}']
-                ).data[0],
-            )
+    fig.add_trace(
+        px.choropleth_mapbox(
+            joined,
+            geojson=highlights,
+            color=f'{variable}_{dummy_code_hours[hour]}',
+            locations='id',
+            featureidkey='properties.id',
+            opacity=1,
+            hover_data=['longitude', 'latitude', f'{variable}_{dummy_code_hours[hour]}'],
+            custom_data=['latitude', 'longitude', f'{variable}_{dummy_code_hours[hour]}']
+        ).data[0],
+    )
 
     fig.update_traces(
         dict(
-            marker_line_color='blue',
+            marker_line_color='red',
             marker_line_width=2
         ),
-        selector=dict(opacity=.8)
+        selector=dict(opacity=1)
     )
 
     return fig

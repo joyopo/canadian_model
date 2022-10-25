@@ -182,7 +182,9 @@ def filter_and_download(n_clicks, data, variable, hour):
     Input('choropleth', 'clickData'),
     State('memory', 'data')
 )
-def make_choropleth(variable, hour, clickdata, memory):
+def make_choropleth(variable, hour, clickdata, memory, callback_context):
+    triggered_id = callback_context.triggered[0]['prop_id']
+
     fig = px.choropleth_mapbox(
         watershed_data_grouped,
         geojson=watersheds,
@@ -198,11 +200,6 @@ def make_choropleth(variable, hour, clickdata, memory):
         labels=labels,
         hover_data=['HYBAS_ID', f'{variable}_{dummy_code_hours[hour]}'],
 
-    )
-
-    fig.update_traces(
-        marker_line_color='white',
-        marker_line_width=.5
     )
 
     fig.update_layout(
@@ -222,44 +219,49 @@ def make_choropleth(variable, hour, clickdata, memory):
 
     )
 
-    # selected_hybas_list = set()
-    # for i in data:
-    #     hybas_id = i['hybas_id']
-    #     selected_hybas_list.add(hybas_id)
+    selections = set(memory)
+    # ipdb.set_trace()
 
-    if clickdata is not None:
-        logging.info(f'store memory: {memory}')
-        selections = set(memory)
-        logging.info(f'selections set: {selections}')
-
+    if triggered_id == 'choropleth.clickData':
         selected_hybas_id = clickdata['points'][0]['location']
-
         if selected_hybas_id not in selections:
             selections.add(selected_hybas_id)
-        else:
+        elif selected_hybas_id in selections:
             selections.remove(selected_hybas_id)
 
-        if len(selections) > 0:
-            # highlights contain the geojson information for only
-            # the selected watersheds
-            highlights = get_highlights(selections)
+    # highlights contain the geojson information for only
+    # the selected watersheds
+    highlights = get_highlights(selections)
 
-            fig.add_trace(
-                px.choropleth_mapbox(watershed_data_grouped, geojson=highlights,
-                                     color=f'{variable}_{dummy_code_hours[hour]}',
-                                     locations=watershed_data_grouped['HYBAS_ID'],
-                                     featureidkey="properties.HYBAS_ID",
-                                     opacity=.8).data[0]
-            )
+    logging.info(f'store memory: {memory}')
+    logging.info(f'selections set: {selections}')
 
-    fig.update_traces(
-        dict(
-            marker_line_color='blue',
-            marker_line_width=2
-        ),
-        selector=dict(opacity=.8)
+    fig.add_trace(
+        px.choropleth_mapbox(
+            watershed_data_grouped,
+            geojson=highlights,
+            color=f'{variable}_{dummy_code_hours[hour]}',
+            locations=watershed_data_grouped['HYBAS_ID'],
+            featureidkey="properties.HYBAS_ID",
+            opacity=1
+        ).data[0]
     )
+    fig.update_traces(
+        marker_line_color='white',
+        marker_line_width=.5,
+        selector=dict(marker_opacity=.65)
+    )
+    fig.update_traces(
+        marker=dict(
+            marker_line_color='red',
+            marker_line_width=4,
+        ),
+        selector=dict(marker_pacity=1)
+    )
+
     return fig
+
+
 
 
 if __name__ == '__main__':
