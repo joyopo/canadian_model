@@ -146,12 +146,12 @@ BOUNDS = {
 }
 
 
-def read_country_border(country):
-    with open('canada_borders.geojson') as f:
-        canada_gjson = json.load(f)
-    pakistan_gdf = gpd.read_file('mysite/weather/shapefiles/pak_adm_ocha_pco_gaul_20181218_SHP/admin0')
-
-    return canada_gjson
+# def read_country_border(country):
+#     with open('canada_borders.geojson') as f:
+#         canada_gjson = json.load(f)
+#     pakistan_gdf = gpd.read_file('mysite/weather/shapefiles/pak_adm_ocha_pco_gaul_20181218_SHP/admin0')
+#
+#     return canada_gjson
 
 
 # filenames are independent of country
