@@ -386,7 +386,7 @@ def run_aggregations(current_day, model_run_start):
         else:
             raise Exception
         logging.info('finished spatial join')
-        watershed_grouped.to_csv(os.path.join(base_dir, f'archive/{country}/aggregated/watersheds/{current_day}_{model_run_start}.csv'))
+        # watershed_grouped.to_csv(os.path.join(base_dir, f'archive/{country}/aggregated/watersheds/{current_day}_{model_run_start}.csv'))
         watershed_grouped.to_csv(os.path.join(base_dir, f'live_data/{country}/aggregated/watersheds/watersheds.csv'))
 
 
