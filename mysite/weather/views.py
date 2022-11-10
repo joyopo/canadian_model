@@ -38,7 +38,7 @@ def about(request):
 
 
 def report(request):
-    return FileResponse(open('app/weather/static/Joseph_Young_CIVI7901_Report_Final_Draft.pdf', 'r'))
+    return FileResponse(open('weather/static/Joseph_Young_CIVI7901_Report_Final_Draft.pdf', 'r'))
 
 
 def download_pakistan_grid_netcdf(request):
