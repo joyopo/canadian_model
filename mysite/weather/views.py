@@ -33,6 +33,10 @@ def canadian_grid(request):
     return render(request, 'canadian_grid.html')
 
 
+def about(request):
+    return render(request, 'about.html')
+
+
 def download_pakistan_grid_netcdf(request):
     filename = 'live_data/pakistan/netcdf/netcdf.nc'
     response = FileResponse(open(filename, 'rb'))

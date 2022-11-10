@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html style="font-size: 16px;">
+<style>
+    .zoom-container {
+        transform: scale(.75, .75)
+        }
+.button {
+  background-color: white;
+  border: none;
+  color: black;
+  font-weight: bold;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border: 2px solid #7eaacd;
+  transition-duration: 0.2s;
+  border-radius: 4px;
+  margin-left: 20;
+  margin-right: 20
+  }
+
+.button:hover {
+  background-color: #7eaacd;
+  color: white;
+}
+.button_div {
+    vertical-align: middle;
+    padding: 20;
+    align-items: center;
+}
+.topnav {
+  overflow: hidden;
+  background-color: #333;
+}
+
+.topnav a {
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 14px;
+  font-family: Verdana, sans-serif;
+
+}
+
+.topnav a:hover {
+  background-color: #54b9f8;
+  color: white;
+}
+
+.topnav a.active {
+  background-color: #04AA6D;
+  color: white;
+  }
+
+.heada {
+background-color: #4682B4;
+text-align: center;
+color: white;
+font-weight: bold;
+padding: 20px;
+font-family: Verdana, sans-serif;
+margin: 0
+<!--margin-block-start: 0;-->
+<!--margin-block-end: 0-->
+}
+.footer {
+background-color: #333;
+color: white;
+font-weight: bold;
+padding: 30px;
+font-family: Verdana, sans-serif;
+
+}
+
+h1 {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 20
+}
+
+plotly {
+<!--background-color: red;-->
+padding-bottom: 50% !important;
+}
+html {background-color: #ecf8f2}
+body {margin: 0px}
+iframe {
+padding-bottom: 50% !important;
+}
+
+</style>
+<body>
+  <div class="heada">
+<!--      <header class="heada">-->
+        <h1>Canadian Numerical Weather Predictor Portal</h1>
+<!--      </header>-->
+  </div>
+  <div class="topnav">
+<!--  <a href="canadian_grid_dash_plot">Canada Grid</a>-->
+<!--  <a href="canadian_watersheds_dash_plot">Canada Watersheds</a>-->
+  <a href="pakistan_grid_dash_plot">Pakistan Grid</a>
+  <a href="pakistan_watersheds_dash_plot">Pakistan Watersheds</a>
+
+<!--</div>-->
+<!--  <div class="button_div">-->
+<!--      <a href="canadian_grid_dash_plot" class="button">Canada Grid</a>-->
+<!--      <a href="canadian_watersheds_dash_plot" class="button">Canada Watersheds</a>-->
+<!--      <a href="pakistan_grid_dash_plot" class="button">Pakistan Grid</a>-->
+<!--      <a href="pakistan_watersheds_dash_plot" class="button">Pakistan Watersheds</a>-->
+
+  </div>
+  <iframe src="weather/static/Joseph_Young_CIVI7901_Report_Final_Draft.pdf" width="100%" height="500px">
+
+  </iframe>
+
+
+
+
+<footer class="footer">
+    <p>Joseph Young</p>
+</footer>
+  </body>
+</html>
