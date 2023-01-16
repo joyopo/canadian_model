@@ -172,7 +172,7 @@ def filter_and_download(n_clicks, data, variable, hour):
             start_time=start_time_label
         )
 
-        return dcc.send_data_frame(download_df.to_csv, f'{country}_watersheds_weather_portal.csv')
+        return dcc.send_data_frame(download_df.to_csv(date_format='%Y-%m-%d %H:%M:%S'), f'{country}_watersheds_weather_portal.csv')
 
 
 @app.callback(
