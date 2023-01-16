@@ -550,6 +550,7 @@ def filter_and_download_grid(data, variable, df, start_time):
 
     # reformat columns
     download_df = download_df.rename(columns={'valid_time_0': 'forecast_start_time'})
+    download_df['forecast_start_time'] = download_df['forecast_start_time'].astype(str)
     download_df.columns = download_df.columns.str.replace(f'{variable}_', '')
     download_df['weather_variable'] = VARIABLE_ABRV[variable]['name']
     download_df['units'] = VARIABLE_ABRV[variable]['units']
@@ -596,6 +597,7 @@ def filter_and_download_watershed(data, variable, df, hour, start_time):
 
     # add detailed start times
     download_df['forecast_start_time'] = start_time
+    download_df['forecast_start_time'] = download_df['forecast_start_time'].astype(str)
 
     download_df.reset_index(inplace=True, drop=True)
 
